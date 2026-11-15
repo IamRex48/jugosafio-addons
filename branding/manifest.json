@@ -1,0 +1,11 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "JUGOSAFIO | Event look",
+    "description": "Custom Jugosafio title and splash texts. Disable in Global Resources to restore the default look.",
+    "uuid": "143fd6c0-c67c-4e36-9baa-68884ec01b62",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 120]
+  },
+  "modules": [{"type": "resources", "uuid": "e3adbe29-3dda-4ea5-a594-67e6a38312e1", "version": [1, 0, 0]}]
+}

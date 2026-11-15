@@ -1,0 +1,31 @@
+{
+  "namespace": "start",
+  "title_ded": {
+    "type": "image",
+    "texture": "textures/ui/client/logo",
+    "size": ["100%", "50%"],
+    "layer": 1
+  },
+  "start_screen_content": {
+    "modifications": [{
+      "array_name": "controls",
+      "operation": "insert_front",
+      "value": [{
+        "jugosafio_event_title": {
+          "type": "label",
+          "text": "JUGOSAFIO",
+          "font_type": "MinecraftTen",
+          "font_size": "extra_large",
+          "color": [0.67, 0.94, 0.34],
+          "shadow": true,
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "offset": [0, 10],
+          "size": ["100%", 28],
+          "text_alignment": "center",
+          "layer": 20
+        }
+      }]
+    }]
+  }
+}
