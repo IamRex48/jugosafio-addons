@@ -1,0 +1,7 @@
+#bank-record{display:none;align-items:center;gap:9px;max-width:285px;font-size:12px;color:#eef4fc}
+#bank-record .bank-data{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#bank-record img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated}
+#bank-record #bank-soul{width:27px;height:27px}
+#bank-status{display:block;width:100%;font-size:8px;line-height:1.6;color:#b5c2d3}
+body:not([data-event=jugosafio]) #bank-record{display:none}
+@media(max-width:1100px){#bank-record{max-width:190px}.header-wordmark{display:none}}

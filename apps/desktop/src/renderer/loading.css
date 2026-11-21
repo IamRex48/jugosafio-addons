@@ -1,0 +1,12 @@
+.loading-art{position:relative;display:grid;place-items:center;width:240px;height:200px;margin:0 auto 20px}
+.loading-art .update-logo{position:relative;z-index:1;width:176px;height:120px;margin:0;filter:drop-shadow(0 5px 12px #0006)}
+.loading-diamond{position:absolute;width:136px;height:136px;border:1px solid #ffd46599;border-radius:14px;transform:rotate(45deg);box-shadow:0 0 32px #ffd46518,inset 0 0 25px #ffd4650a}
+.loading-art.is-loading .loading-diamond{animation:load-diamond 6s linear infinite}
+.loading-art[data-style=roulette] .loading-diamond,.loading-art[data-style=roulette] .update-logo{display:none}
+#loading-roulette{width:200px;height:auto;filter:drop-shadow(0 8px 16px #0005)}
+.update-modal[open]{animation:load-enter .26s ease-out}
+.folder-setting>div{flex:1;min-width:0}.folder-setting input{font:12px system-ui;width:100%;margin-top:10px}
+@keyframes load-diamond{from{transform:rotate(45deg)}to{transform:rotate(405deg)}}
+@keyframes load-enter{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.reduced-motion .loading-diamond,.loading-still .loading-diamond{animation:none!important}
+@media(prefers-reduced-motion:reduce){.update-modal[open],.loading-art.is-loading .loading-diamond{animation:none}}

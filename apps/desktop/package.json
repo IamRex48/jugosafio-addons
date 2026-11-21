@@ -1,0 +1,58 @@
+{
+  "name": "fonyx-launcher",
+  "version": "1.2.15-beta.3",
+  "description": "El punto de encuentro de Fonyx Studios. Launcher de eventos de Minecraft Bedrock.",
+  "main": "src/main.js",
+  "author": "Fonyx Studios",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "admin": "electron . --admin",
+    "test": "node --test test/*.test.js",
+    "build": "node build.cjs"
+  },
+  "dependencies": {
+    "archiver": "5.3.2",
+    "discord-rpc": "4.0.1",
+    "ws": "7.5.14",
+    "yauzl": "2.10.0"
+  },
+  "devDependencies": {
+    "electron": "35.7.5",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "studios.fonyx.launcher",
+    "productName": "Fonyx Launcher",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "launcher-content.json",
+      "package.json"
+    ],
+    "asar": true,
+    "extraResources": [
+      {
+        "from": "native/FonyxVoiceKeys.exe",
+        "to": "native/FonyxVoiceKeys.exe"
+      },
+      {
+        "from": "native/FonyxEventTrust.exe",
+        "to": "native/FonyxEventTrust.exe"
+      }
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Fonyx-Launcher-${version}.exe"
+    }
+  }
+}

@@ -13,3 +13,5 @@ local.properties
 private-analysis/
 verification/
 .env*
+tools/package/
+tools/*.tgz
