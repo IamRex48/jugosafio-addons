@@ -11,3 +11,15 @@ Análisis estático del XAPK suministrado, no ejecución ni sesión autenticada.
 - El manifiesto externo del XAPK declara RECORD_AUDIO, SYSTEM_ALERT_WINDOW, POST_NOTIFICATIONS, WAKE_LOCK y FOREGROUND_SERVICE_MICROPHONE/MEDIA_PLAYBACK. Debe contrastarse con el AndroidManifest binario; no copiar todos sus permisos, publicidad o compras a Fonyx.
 
 Pendiente: descompilar solo wrappers Android fuera del repositorio para documentar request/eventSink y ciclo de vida del overlay; cotejar con el contrato PC, obtener trazas reales y reimplementar con código propio. Revisar condiciones/licencias antes de cualquier distribución. No extraer libgojni.so a la APK Fonyx.
+
+## Contrato JNI contrastado con DEX
+
+Androguard confirmó estas firmas, sin copiar cuerpos de métodos al proyecto:
+
+- realmsproxy.Engine(String, EventSink), request(String): String, close(): void, setEventSink(EventSink).
+- realmsproxy.EventSink.onEvent(String): void.
+- realmsproxy.Realmsproxy.newEngine(String, EventSink): Engine; lanAddress(): String.
+- VcmcRealmsProxyHost mantiene bind/unbind y un executor para request; la interfaz Flutter no es el motor.
+- aapt2 confirmó VcmcOverlayService: exported=false, stopWithTask=false y foregroundServiceType=0x82 (micrófono + reproducción). No inferir que esos atributos impidan que Android mate el proceso.
+
+La documentación oficial consultada describe el SDK como herramienta de backend/extensiones, no como motor cliente móvil redistribuible. El Admin Toolkit tiene licencia PolyForm Noncommercial 1.0.0 y excluye control/verificaciones propietarios. No sustituye automáticamente nuestro puente de autenticación. Fuente: https://antoic.com/docs/vcmc.html (secciones SDK y Admin Toolkit).

@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const asar=require('@electron/asar');
-const {buildStamp}=require('./build-stamp');
+const {buildStamp}=require('./build-stamp.cjs');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'verification');fs.mkdirSync(out,{recursive:true});
 const stage=fs.mkdtempSync(path.join(out,'desktop-payload-'));
 for(const relative of ['src','assets','package.json']){

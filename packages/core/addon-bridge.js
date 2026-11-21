@@ -24,7 +24,7 @@ class AddonBridge extends EventEmitter{
       this.emit('event',{type:'account-retry'});
       proof=await this.engine.request('identity_proof',{payload:nonce},900000);
     }
-    const identity=this.verifyIdentity(proof,nonce,await this.loadKeys());
+    const identity=await this.verifyIdentity(proof,nonce,await this.loadKeys());
     if(generation!==this.generation)throw new Error('Conexión cancelada.');
     this.identity=identity;this.emit('event',{type:'account',name:identity.name,connected:true});return {name:identity.name};
   }

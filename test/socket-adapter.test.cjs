@@ -17,3 +17,7 @@ test('native socket refuses oversized or unsupported frames',()=>{
  const Socket=socketAdapter(FakeSocket),socket=new Socket('wss://example.org',{maxPayload:2});socket.native.emit('open');
  socket.native.emit('message',{data:Uint8Array.from([1,2,3]).buffer});assert.equal(socket.native.closed[0][0],4009);
 });
+test('native socket applies the byte limit to text frames too',()=>{
+ const Socket=socketAdapter(FakeSocket),socket=new Socket('wss://example.org',{maxPayload:2});socket.native.emit('open');
+ socket.native.emit('message',{data:'😀'});assert.equal(socket.native.closed[0][0],4009);
+});

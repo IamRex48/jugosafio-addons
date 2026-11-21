@@ -1,4 +1,5 @@
 const {EventEmitter}=require('events');
+const {utf8Bytes}=require('../../packages/core/content');
 function socketAdapter(NativeWebSocket){
  return class NativeSocket extends EventEmitter{
   constructor(url,options={}){
@@ -9,7 +10,7 @@ function socketAdapter(NativeWebSocket){
    this.native.addEventListener('close',event=>{clearTimeout(timer);this.emit('close',event.code,event.reason);});
    this.native.addEventListener('message',event=>{
     const data=event.data;
-    if(typeof data==='string'){this.emit('message',data,false);return;}
+    if(typeof data==='string'){if(data.length>(options.maxPayload||1048576)||utf8Bytes(data)>(options.maxPayload||1048576)){this.native.close(4009,'Paquete de voz inválido.');return;}this.emit('message',data,false);return;}
     const bytes=data instanceof ArrayBuffer?new Uint8Array(data):ArrayBuffer.isView(data)?new Uint8Array(data.buffer,data.byteOffset,data.byteLength):null;
     if(!bytes||bytes.length>(options.maxPayload||1048576)){this.native.close(4009,'Paquete de voz inválido.');return;}
     this.emit('message',bytes,true);

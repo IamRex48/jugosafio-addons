@@ -15,3 +15,8 @@ test('a wrong account rejects the wait immediately and does not remain connected
  const {bridge,engine}=setup();await bridge.start('example.org',19132);const ready=bridge.waitForServer(1000);
  engine.emit('engine-event',{event:'minecraft_authenticated',xuid:'999'});await assert.rejects(ready,/coincide/);assert.equal(bridge.connected,false);
 });
+test('an async identity verifier must complete before an account can be accepted',async()=>{
+ const engine=new EventEmitter();engine.start=async()=>{};engine.request=async()=>({});
+ const bridge=new AddonBridge({engine,nonce:()=> 'a'.repeat(32),loadKeys:async()=>[],verifyIdentity:async()=>{throw new Error('Invalid proof');}});
+ await assert.rejects(bridge.login(),/Invalid proof/);assert.equal(bridge.identity,null);
+});
