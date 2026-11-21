@@ -61,3 +61,10 @@ CI3fe5d89: Android10,13 y15 aprobaron8 tests en teléfono y tablet. Opus nativo 
 
 
 La revisión de la captura real detectó que el panel expandido conservaba el ancho de la burbuja y partía palabras. Se fijó un ancho de220dp para controles, botones grises de48dp y ScrollView acotado al alto disponible. La burbuja cerrada conserva64dp; al expandir/arrastrar se mantiene dentro de pantalla. El test ahora verifica ancho y desplaza hasta Desconectar. Si Android rechaza la ventana flotante se corta la voz y se avisa, en lugar de dejar un micrófono sin controles. Error de portapapeles convertido en rechazo controlado.66 tests Node aprobados; APK y test compilados;14 bibliotecas ARM64 alineadas16KiB. Validación visual y nueva instrumentación pendientes del siguiente run.
+
+
+### Iconos y PTT flotante independiente, solicitado por el usuario
+
+Se sustituyeron botones de texto por iconos nativos con etiquetas accesibles. Los iconos comunes se generan desde los mismos recursos de PC; mano, copia, altavoz y mover son vectores. Activar PTT desde la burbuja abre un segundo control de64dp. Bloqueado responde a mantener pulsado; desbloqueado solo se arrastra y nunca activa transmisión. El candado del menú permite fijarlo; posición y bloqueo se guardan. Ambos overlays usan SPLIT_TOUCH para permitir otros dedos en el juego. UP/CANCEL/salida del área/pérdida del puntero liberan el micrófono. El modo se sincroniza con Ajustes y se guarda por el adaptador nativo existente.
+
+68 contratos Node aprobados, compilación APK+test aprobada,14 bibliotecas ARM64 alineadas16KiB. El test nativo verifica iconos, bloqueo, movimiento sin hablar, guardado, cancelación y reaparición en la misma posición. Ejecución de este cambio aún pendiente. La versión anterior fe45ebc aprobó los8 tests nativos en Android10/13/14/15, teléfono y tablet; no confundir esa comprobación con el nuevo widget.

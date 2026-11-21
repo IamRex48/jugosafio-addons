@@ -59,7 +59,7 @@ class FonyxVoiceModule(context: ReactApplicationContext) : ReactContextBaseJavaM
         } catch (error: Exception) { promise.reject("VOICE_START", error.message) }
     } }
     @ReactMethod fun track(id: String, promise: Promise) { microphone = id; promise.resolve(true) }
-    @ReactMethod fun update(muted: Boolean, deafened: Boolean, verified: Boolean, speaking: Boolean) { FonyxVoiceService.instance?.update(muted, deafened, verified, speaking) }
+    @ReactMethod fun update(muted: Boolean, deafened: Boolean, verified: Boolean, speaking: Boolean, pushToTalk: Boolean) { FonyxVoiceService.instance?.update(muted, deafened, verified, speaking, pushToTalk) }
     @ReactMethod fun stop(promise: Promise) { reactApplicationContext.runOnUiQueueThread {
         FonyxVoiceService.stopMicrophone?.invoke()
         reactApplicationContext.stopService(Intent(reactApplicationContext, FonyxVoiceService::class.java))

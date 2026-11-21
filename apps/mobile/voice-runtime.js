@@ -6,9 +6,9 @@ const native=NativeModules.FonyxVoice;
 export const voiceEvents=new EventEmitter();
 let relay=null,audio=null,starting=false,running=false,generation=0,command='',level=0,stopping=0;
 const nativeEvents=new NativeEventEmitter(native);
-export function voiceState(){return {...relay?.snapshot(),status:relay?.status||'Desconectado',microphoneActive:!!audio?.canTransmit(),command,peers:audio?[...audio.peers.keys()]:[]};}
+export function voiceState(){return {...relay?.snapshot(),status:relay?.status||'Desconectado',microphoneActive:!!audio?.canTransmit(),pushToTalk:audio?.pushToTalk,command,peers:audio?[...audio.peers.keys()]:[]};}
 export async function copyVoiceCode(){if(!command)throw new Error('No hay un código de verificación vigente.');return native.copyCode(command);}
-function updateBubble(){native.update(!!audio?.muted||!!audio?.forcedMute,!!audio?.deafened||!!audio?.forcedDeafen,!!relay?.verified,level>5&&!!audio?.canTransmit());}
+function updateBubble(){native.update(!!audio?.muted||!!audio?.forcedMute,!!audio?.deafened||!!audio?.forcedDeafen,!!relay?.verified,level>5&&!!audio?.canTransmit(),!!audio?.pushToTalk);}
 function changed(){updateBubble();voiceEvents.emit('event',{type:'voice-state',value:voiceState()});}
 async function stopVoice(){++stopping;try{const oldRelay=relay,oldAudio=audio;relay=null;audio=null;running=false;command='';level=0;oldRelay?.removeAllListeners();oldRelay?.disconnect();try{await oldAudio?.stop();}finally{await native.stop();changed();}}finally{--stopping;}}
 export async function disconnectVoice(){++generation;try{await stopVoice();}finally{starting=false;}}
@@ -21,6 +21,7 @@ nativeEvents.addListener('FonyxVoiceEvent',event=>{
  if(event.type==='mute')voiceControls({muted:event.value});
  else if(event.type==='deafen')voiceControls({deafened:event.value});
  else if(event.type==='ptt')voiceControls({pttHeld:event.value});
+ else if(event.type==='ptt-mode'&&audio){voiceControls({pushToTalk:event.value,pttHeld:false});voiceEvents.emit('event',{type:'microphone-mode',value:event.value});}
  else if(event.type==='volume')voiceControls({volume:event.value});
  else if(event.type==='copy-code')copyVoiceCode().catch(error=>voiceEvents.emit('event',{type:'warning',message:error.message}));
  else if(event.type==='focus'){audio?.setControls({focusLost:event.value,...(event.value?{pttHeld:false}:{})});changed();}

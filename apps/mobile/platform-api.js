@@ -6,6 +6,12 @@ const {loadContent}=require('./content-source');
 const {validateContent}=require('../../packages/core/content');
 const platform=NativeModules.FonyxPlatform;
 let content=validateContent(initialState.content),settings={...defaults},loaded=false;
+voiceEvents.on('event',message=>{
+ if(message.type==='microphone-mode'){
+  settings={...settings,voiceMicMode:message.value?'pushToTalk':'open'};
+  platform.saveSettings(JSON.stringify(settings)).catch(()=>voiceEvents.emit('event',{type:'warning',message:'No se pudo guardar el modo del micrófono.'}));
+ }
+});
 const ok=value=>({ok:true,value});
 async function snapshot(){if(platform){const saved=JSON.parse(await platform.settings());settings={...defaults,...saved};}return {...initialState,content,settings,voice:voiceState(),account:{name:account.identity?.name||'',connected:!!account.identity}};}
 async function json(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error(`HTTP ${response.status}`);const text=await response.text();if(text.length>2*1024*1024)throw new Error('La publicaciÃ³n supera 2 MB.');return JSON.parse(text);}finally{clearTimeout(timer);}}

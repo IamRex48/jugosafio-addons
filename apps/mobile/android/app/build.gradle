@@ -73,6 +73,7 @@ def enableProguardInReleaseBuilds = false
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
+    sourceSets.main.res.srcDir(layout.buildDirectory.dir('generated/res/fonyx-voice'))
     testBuildType "release"
     ndkVersion rootProject.ext.ndkVersion
     if (project.hasProperty("fonyxNdkPath")) ndkPath project.property("fonyxNdkPath").toString()
@@ -115,6 +116,13 @@ android {
         }
     }
 }
+
+def copyFonyxVoiceIcons = tasks.register('copyFonyxVoiceIcons', Copy) {
+    into(layout.buildDirectory.dir('generated/res/fonyx-voice/drawable'))
+    from('../../../../packages/ui/assets') { include 'mic.png', 'lock.png', 'home.png', 'close.png'; rename { 'voice_' + it } }
+    from('../../../desktop/assets') { include 'fonyx-symbol.png'; rename { 'voice_brand.png' } }
+}
+tasks.named('preBuild').configure { dependsOn(copyFonyxVoiceIcons) }
 
 dependencies {
     implementation('org.jitsi:webrtc:155.0.1') { version { strictly '155.0.1' } }

@@ -80,3 +80,12 @@ test('a failed overlay stops voice rather than leaving a microphone without floa
  f.events.emit('FonyxVoiceEvent',{type:'overlay-error'});await new Promise(resolve=>setImmediate(resolve));
  assert.equal(f.api.voiceState().status,'Desconectado');assert.equal(f.calls.at(-1),'service-stop');assert.equal(warnings.length,1);
 });
+test('bubble toggles PTT mode, releases any held microphone and reports the selected mode',async()=>{
+ const f=fixture();await f.api.connectVoice(identity,event,{});const modes=[];
+ f.api.voiceEvents.on('event',value=>{if(value.type==='microphone-mode')modes.push(value.value);});
+ f.events.emit('FonyxVoiceEvent',{type:'ptt',value:true});
+ f.events.emit('FonyxVoiceEvent',{type:'ptt-mode',value:true});
+ assert.equal(f.audios[0].pushToTalk,true);assert.equal(f.audios[0].pttHeld,false);assert.equal(f.api.voiceState().pushToTalk,true);
+ f.events.emit('FonyxVoiceEvent',{type:'ptt-mode',value:false});
+ assert.equal(f.audios[0].pushToTalk,false);assert.deepEqual(modes,[true,false]);await f.api.disconnectVoice();
+});

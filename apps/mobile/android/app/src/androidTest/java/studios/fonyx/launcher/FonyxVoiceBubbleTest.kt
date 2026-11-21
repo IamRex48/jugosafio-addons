@@ -4,6 +4,8 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.os.Build
+import org.junit.Assume.assumeTrue
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.InputDevice
@@ -36,40 +38,63 @@ class FonyxVoiceBubbleTest {
         }
         throw AssertionError("Bubble control missing: $text")
     }
-    @Test fun realOverlaySupportsMuteDeafenVolumeAndPttReleaseWithoutRecording() {
-        val context=instrumentation.targetContext
-        val automation=instrumentation.uiAutomation
+    @Test fun iconMenuAndIndependentPttSupportLockMoveHoldAndReleaseWithoutRecording() {
+        assumeTrue(Build.FINGERPRINT.contains("generic") || Build.MODEL.contains("sdk_gphone"))
+        val context=instrumentation.targetContext;val automation=instrumentation.uiAutomation
+        val preferences=context.getSharedPreferences("voice-overlay",0)
+        assertTrue("Overlay test requires a fresh emulator",preferences.all.isEmpty())
         automation.serviceInfo=automation.serviceInfo.apply { flags=flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS }
         automation.executeShellCommand("appops set ${context.packageName} SYSTEM_ALERT_WINDOW allow").use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         node("Fonyx Launcher");SystemClock.sleep(500)
-        val calls=Collections.synchronizedList(mutableListOf<Pair<String,Boolean>>())
-        var volume = -1.0
-        var bubble:FonyxVoiceBubble? = null
+        val calls=Collections.synchronizedList(mutableListOf<Pair<String,Boolean>>());var volume=-1.0
+        var bubble:FonyxVoiceBubble?=null
+        fun bounds(label:String)=Rect().also { node(label).getBoundsInScreen(it) }
+        fun touch(down:Long,action:Int,x:Float,y:Float) { val event=MotionEvent.obtain(down,SystemClock.uptimeMillis(),action,x,y,0);event.source=InputDevice.SOURCE_TOUCHSCREEN;assertTrue(automation.injectInputEvent(event,true));event.recycle() }
+        fun gesture(rect:Rect,dx:Float=0f,dy:Float=0f,cancel:Boolean=false) {
+            val down=SystemClock.uptimeMillis();touch(down,MotionEvent.ACTION_DOWN,rect.exactCenterX(),rect.exactCenterY())
+            if(dx!=0f||dy!=0f)touch(down,MotionEvent.ACTION_MOVE,rect.exactCenterX()+dx,rect.exactCenterY()+dy)
+            SystemClock.sleep(100);touch(down,if(cancel)MotionEvent.ACTION_CANCEL else MotionEvent.ACTION_UP,rect.exactCenterX()+dx,rect.exactCenterY()+dy)
+            instrumentation.waitForIdleSync();SystemClock.sleep(150)
+        }
         try {
-            instrumentation.runOnMainSync { bubble=FonyxVoiceBubble(context,{name,value->calls.add(name to value)},{volume=it}); bubble!!.show() }
-            assertTrue(node("VC").performAction(AccessibilityNodeInfo.ACTION_CLICK))
-            SystemClock.sleep(300)
-            val menuBounds=Rect();node("Silenciar micrófono").getBoundsInScreen(menuBounds)
-            assertTrue("Bubble menu must not wrap every word",menuBounds.width()>150*context.resources.displayMetrics.density)
+            instrumentation.runOnMainSync { bubble=FonyxVoiceBubble(context,{name,value->calls.add(name to value)},{volume=it});bubble!!.show() }
+            assertTrue(node("Burbuja de voz").performAction(AccessibilityNodeInfo.ACTION_CLICK));SystemClock.sleep(300)
+            for(label in listOf("Silenciar micrófono","Dejar de escuchar","Activar pulsar para hablar","Copiar comando","Abrir Fonyx","Desconectar")) {
+                assertEquals("Controls must be icons", "android.widget.ImageButton",node(label).className.toString())
+                assertTrue(bounds(label).width()>=47*context.resources.displayMetrics.density)
+            }
             assertTrue(node("Silenciar micrófono").performAction(AccessibilityNodeInfo.ACTION_CLICK))
             assertTrue(node("Dejar de escuchar").performAction(AccessibilityNodeInfo.ACTION_CLICK))
-            val slider=node("Volumen de voz")
-            assertTrue(slider.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_PROGRESS.id, Bundle().apply { putFloat(AccessibilityNodeInfo.ACTION_ARGUMENT_PROGRESS_VALUE,35f) }))
-            val bounds=Rect();node("Pulsar para hablar").getBoundsInScreen(bounds)
-            val down=SystemClock.uptimeMillis()
-            fun touch(action:Int) { val event=MotionEvent.obtain(down,SystemClock.uptimeMillis(),action,bounds.exactCenterX(),bounds.exactCenterY(),0); event.source=InputDevice.SOURCE_TOUCHSCREEN; assertTrue(automation.injectInputEvent(event,true));event.recycle() }
-            touch(MotionEvent.ACTION_DOWN);SystemClock.sleep(150);touch(MotionEvent.ACTION_UP)
-            instrumentation.waitForIdleSync()
-            assertTrue(calls.contains("mute" to true));assertTrue(calls.contains("deafen" to true))
+            assertTrue(node("Volumen de voz").performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_PROGRESS.id,Bundle().apply { putFloat(AccessibilityNodeInfo.ACTION_ARGUMENT_PROGRESS_VALUE,35f) }))
+            assertTrue(node("Activar pulsar para hablar").performAction(AccessibilityNodeInfo.ACTION_CLICK));SystemClock.sleep(200)
+            assertTrue(calls.contains("ptt-mode" to true))
+            val locked=bounds("Pulsar para hablar")
+            gesture(locked,8*context.resources.displayMetrics.density)
+            assertEquals("Locked PTT must stay in place",locked,bounds("Pulsar para hablar"))
+            assertTrue(calls.contains("ptt" to true));assertTrue(calls.contains("ptt" to false))
+            assertTrue(node("Desbloquear botón para moverlo").performAction(AccessibilityNodeInfo.ACTION_CLICK))
+            val talkingBefore=calls.count { it==("ptt" to true) }
+            gesture(bounds("Mover botón para hablar"),-64*context.resources.displayMetrics.density,-32*context.resources.displayMetrics.density)
+            val moved=bounds("Mover botón para hablar")
+            assertNotEquals("Unlocked PTT must move",locked,moved)
+            assertEquals("Moving must never transmit",talkingBefore,calls.count { it==("ptt" to true) })
+            assertTrue(preferences.contains("pttX"));assertTrue(preferences.contains("pttY"))
+            assertTrue(node("Fijar botón para hablar").performAction(AccessibilityNodeInfo.ACTION_CLICK))
+            assertTrue(preferences.getBoolean("pttLocked",false))
+            gesture(bounds("Pulsar para hablar"),cancel=true)
+            assertEquals("ptt" to false,calls.last())
+            assertTrue(node("Usar micrófono abierto").performAction(AccessibilityNodeInfo.ACTION_CLICK));SystemClock.sleep(100)
+            assertTrue(calls.contains("ptt-mode" to false))
+            assertTrue(node("Activar pulsar para hablar").performAction(AccessibilityNodeInfo.ACTION_CLICK));SystemClock.sleep(150)
+            assertEquals("PTT placement must survive toggling the mode",moved,bounds("Pulsar para hablar"))
             val directory=File(context.getExternalFilesDir(null),"verification").apply { mkdirs() }
             automation.takeScreenshot()!!.let { image->File(directory,"voice-bubble.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG,100,it) };image.recycle() }
-            assertTrue("PTT down missing: $calls at $bounds",calls.contains("ptt" to true));assertTrue("PTT up missing: $calls",calls.contains("ptt" to false));assertEquals(.35,volume,.001)
-            node("Desconectar").performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_ON_SCREEN.id);SystemClock.sleep(200)
-            assertTrue(node("Desconectar").performAction(AccessibilityNodeInfo.ACTION_CLICK));instrumentation.waitForIdleSync()
-            assertTrue(calls.contains("disconnect" to false))
+            assertTrue(calls.contains("mute" to true));assertTrue(calls.contains("deafen" to true));assertEquals(.35,volume,.001)
+            assertTrue(node("Desconectar").performAction(AccessibilityNodeInfo.ACTION_CLICK));instrumentation.waitForIdleSync();assertTrue(calls.contains("disconnect" to false))
         } finally {
             instrumentation.runOnMainSync { bubble?.close() }
+            preferences.edit().clear().commit()
             automation.executeShellCommand("appops set ${context.packageName} SYSTEM_ALERT_WINDOW default").close()
         }
     }

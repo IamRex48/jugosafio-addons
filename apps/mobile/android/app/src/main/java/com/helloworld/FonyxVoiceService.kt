@@ -46,7 +46,7 @@ class FonyxVoiceService : HeadlessJsTaskService() {
         audio.mode = AudioManager.MODE_IN_COMMUNICATION; audio.requestAudioFocus(focus)
         bubble = FonyxVoiceBubble(this, { name, value -> if(name == "disconnect") { stopMicrophone?.invoke(); action(name); stopSelf() } else action(name, value) }, { volumeChanged?.invoke(it) }).also { it.show() }
     }
-    fun update(mute: Boolean, deafen: Boolean, accepted: Boolean, speaking: Boolean) { handler.post { bubble?.update(mute, deafen, accepted, speaking) } }
+    fun update(mute: Boolean, deafen: Boolean, accepted: Boolean, speaking: Boolean, pushToTalk: Boolean) { handler.post { bubble?.update(mute, deafen, accepted, speaking, pushToTalk) } }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if(intent?.action == "stop") { stopMicrophone?.invoke(); action("disconnect"); stopSelf(); return START_NOT_STICKY }
         super.onStartCommand(intent, flags, startId); return START_NOT_STICKY

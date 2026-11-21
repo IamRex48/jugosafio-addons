@@ -15,7 +15,7 @@ export default function Launcher({api,initialState}){
  async function ping(){if(!event.enabled)return;const info=await action('ping',event.id);if(info)setStatus(info);}
  useEffect(()=>{refresh();const timer=setInterval(refresh,30000);return()=>clearInterval(timer);},[]);
  useEffect(()=>{setStatus({online:null});ping();},[event.id]);
- useEffect(()=>api.onVoice?.(message=>{if(message.type==='account')refresh();if(message.type==='warning')setNotice(message.message);if(message.type==='voice-state')setState(old=>({...old,voice:message.value}));if(message.type==='microsoft-code')setAuthCode(message.code);}),[api]);
+ useEffect(()=>api.onVoice?.(message=>{if(message.type==='account')refresh();if(message.type==='warning')setNotice(message.message);if(message.type==='microphone-mode')setState(old=>({...old,settings:{...old.settings,voiceMicMode:message.value?'pushToTalk':'open'}}));if(message.type==='voice-state')setState(old=>({...old,voice:message.value}));if(message.type==='microsoft-code')setAuthCode(message.code);}),[api]);
  function navigate(next){setPage(next);setRevil(false);setNotice('');}
  function select(id){setSelected(id);navigate('home');}
  const title=pageTitle(page,event),account=state.account||{name:'',connected:false};

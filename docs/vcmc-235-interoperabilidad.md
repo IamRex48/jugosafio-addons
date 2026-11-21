@@ -35,3 +35,6 @@ Fonyx implementa ese comportamiento con código propio en FonyxVoiceBubble y lo 
 Los contratos de señalización proceden del cliente PC previamente contrastado. La descompilación Android no demuestra por sí sola todos los opcodes Dart de2.3.5. Falta probar una cuenta real y audio entre Minecraft/dispositivos, cambio de red y treinta minutos con pantalla bloqueada. La prueba de burbuja en emulador no graba ni transmite audio.
 
 Además se contrastó WebRtcSpeakerOutput con JADX: es un mezclador PCM con cola acotada, no demuestra selección de salida de AudioManager. No se reutilizó su implementación. En las cadenas de libapp.so ARM64 del XAPK se observó `minecraft://connect/?serverUrl=`. El adaptador Android usa esa ruta y conserva validación de dirección/puerto; Windows conserva su URI existente. Falta confirmar el resultado dentro de Minecraft Android real.
+
+
+Extensión pedida por el usuario: controles por iconos y segundo overlay para PTT, con bloqueo, movimiento y posición persistente. No se afirma que ese segundo control proceda del APK original: es una función solicitada para Fonyx sobre la base WindowManager contrastada. Se añade FLAG_SPLIT_TOUCH a los overlays para que mantener pulsado PTT permita tocar Minecraft con otros dedos. Los recursos comunes son los iconos propios del launcher PC; no se extraen imágenes propietarias de VCMC.
