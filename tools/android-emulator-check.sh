@@ -6,13 +6,14 @@ test_apk=$(find verification/apks -name app-release-androidTest.apk -print -quit
 test -n "$app_apk" && test -n "$test_apk"
 adb install -r "$app_apk"
 adb install -r "$test_apk"
+adb shell settings put secure immersive_mode_confirmations confirmed
 adb logcat -c
 trap 'adb logcat -d > verification/android-emulator/logcat.txt || true; adb pull /sdcard/Android/data/studios.fonyx.launcher/files/verification/. verification/android-emulator/final-state/ || true' EXIT
 run_checks() {
   local name=$1
   adb shell am instrument -w studios.fonyx.launcher.test/androidx.test.runner.AndroidJUnitRunner | tee "verification/android-emulator/$name-results.txt"
-  if ! grep -q 'OK (6 tests)' "verification/android-emulator/$name-results.txt"; then
-    echo "Instrumentation did not pass all six native/UI tests."
+  if ! grep -q 'OK (7 tests)' "verification/android-emulator/$name-results.txt"; then
+    echo "Instrumentation did not pass all seven native/UI/Opus tests."
     return 1
   fi
   mkdir -p "verification/android-emulator/$name"

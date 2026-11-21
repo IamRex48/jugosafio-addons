@@ -6,9 +6,10 @@ const native=NativeModules.FonyxVoice;
 export const voiceEvents=new EventEmitter();
 let relay=null,audio=null,starting=false,running=false,generation=0,command='',level=0,stopping=0;
 const nativeEvents=new NativeEventEmitter(native);
-export function voiceState(){return {...relay?.snapshot(),status:relay?.status||'Desconectado',command,peers:audio?[...audio.peers.keys()]:[]};}
+export function voiceState(){return {...relay?.snapshot(),status:relay?.status||'Desconectado',microphoneActive:!!audio?.canTransmit(),command,peers:audio?[...audio.peers.keys()]:[]};}
 export async function copyVoiceCode(){if(!command)throw new Error('No hay un código de verificación vigente.');return native.copyCode(command);}
-function changed(){native.update(!!audio?.muted||!!audio?.forcedMute,!!audio?.deafened||!!audio?.forcedDeafen,!!relay?.verified,level>5&&!!audio?.canTransmit());voiceEvents.emit('event',{type:'voice-state',value:voiceState()});}
+function updateBubble(){native.update(!!audio?.muted||!!audio?.forcedMute,!!audio?.deafened||!!audio?.forcedDeafen,!!relay?.verified,level>5&&!!audio?.canTransmit());}
+function changed(){updateBubble();voiceEvents.emit('event',{type:'voice-state',value:voiceState()});}
 async function stopVoice(){++stopping;try{const oldRelay=relay,oldAudio=audio;relay=null;audio=null;running=false;command='';level=0;oldRelay?.removeAllListeners();oldRelay?.disconnect();try{await oldAudio?.stop();}finally{await native.stop();changed();}}finally{--stopping;}}
 export async function disconnectVoice(){++generation;try{await stopVoice();}finally{starting=false;}}
 export function voiceControls(values){
@@ -46,7 +47,7 @@ export async function connectVoice(identity,event,settings){
   await native.start();
   const deviceToken=await native.deviceToken();if(current!==generation)throw new Error('Conexión cancelada.');
   relay=createRelay(deviceToken);
-  audio=new MobileVoiceAudio({sendSignal:(peer,payload)=>relay.signal(peer,payload),onChange:()=>{},onLevel:value=>{level=value;relay?.level(value);changed();},onWarning:message=>voiceEvents.emit('event',{type:'warning',message})});
+  audio=new MobileVoiceAudio({sendSignal:(peer,payload)=>relay.signal(peer,payload),onChange:()=>{},onLevel:value=>{level=value;relay?.level(value);updateBubble();},onWarning:message=>voiceEvents.emit('event',{type:'warning',message})});
   audio.setControls({pushToTalk:settings.voiceMicMode==='pushToTalk',pttHeld:false});
   relay.on('event',message=>{
    if(current!==generation)return;

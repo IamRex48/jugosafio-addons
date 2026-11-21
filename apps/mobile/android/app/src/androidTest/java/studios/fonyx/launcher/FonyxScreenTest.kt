@@ -69,6 +69,7 @@ class FonyxScreenTest {
     }
 
     @Test fun nativeViewsAndSharedCoreStartWithoutMetro() {
+        assertTrue("Images must initialize before the first native view", com.facebook.drawee.backends.pipeline.Fresco.hasBeenInitialized())
         val context = instrumentation.targetContext
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: throw AssertionError("Launcher activity missing")
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
