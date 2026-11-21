@@ -26,6 +26,7 @@ class FonyxVoiceBubble(private val context: Context, private val action: (String
         button("Silenciar micrófono") { action("mute", !muted) }
         button("Dejar de escuchar") { action("deafen", !deafened) }
         button("Pulsar para hablar") {}.apply { setOnTouchListener { _, event -> when(event.actionMasked) { MotionEvent.ACTION_DOWN -> action("ptt", true); MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> action("ptt", false) }; true } }
+        button("Copiar comando") { action("copy-code", false) }
         controls.addView(SeekBar(context).apply { max = 100; progress = 100; contentDescription = "Volumen de voz"; minimumWidth = dp(200); setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar?, value: Int, fromUser: Boolean) { if(fromUser) volumeChanged(value / 100.0) }
             override fun onStartTrackingTouch(bar: SeekBar?) {}

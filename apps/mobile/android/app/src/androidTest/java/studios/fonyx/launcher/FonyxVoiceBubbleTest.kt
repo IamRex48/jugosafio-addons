@@ -22,13 +22,15 @@ class FonyxVoiceBubbleTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private fun find(node: AccessibilityNodeInfo?, text: String): AccessibilityNodeInfo? {
         if(node == null) return null
-        if(node.text?.toString() == text || node.contentDescription?.toString() == text) return node
+        if(node.text?.toString() == text || node.contentDescription?.toString() == text || node.viewIdResourceName == text) return node
         for(i in 0 until node.childCount) find(node.getChild(i),text)?.let { return it }
         return null
     }
     private fun node(text: String): AccessibilityNodeInfo {
         val end = SystemClock.uptimeMillis()+10000
         while(SystemClock.uptimeMillis()<end) {
+            val active=instrumentation.uiAutomation.rootInActiveWindow
+            if(active?.packageName == "android" && find(active,"android:id/immersive_cling_title") != null) { find(active,"android:id/ok")?.performAction(AccessibilityNodeInfo.ACTION_CLICK); SystemClock.sleep(150); continue }
             for(window in instrumentation.uiAutomation.windows) find(window.root,text)?.let { return it }
             SystemClock.sleep(100)
         }
@@ -40,12 +42,14 @@ class FonyxVoiceBubbleTest {
         automation.serviceInfo=automation.serviceInfo.apply { flags=flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS }
         automation.executeShellCommand("appops set ${context.packageName} SYSTEM_ALERT_WINDOW allow").use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        node("Fonyx Launcher");SystemClock.sleep(500)
         val calls=Collections.synchronizedList(mutableListOf<Pair<String,Boolean>>())
         var volume = -1.0
         var bubble:FonyxVoiceBubble? = null
         try {
             instrumentation.runOnMainSync { bubble=FonyxVoiceBubble(context,{name,value->calls.add(name to value)},{volume=it}); bubble!!.show() }
             assertTrue(node("VC").performAction(AccessibilityNodeInfo.ACTION_CLICK))
+            SystemClock.sleep(300)
             assertTrue(node("Silenciar micrófono").performAction(AccessibilityNodeInfo.ACTION_CLICK))
             assertTrue(node("Dejar de escuchar").performAction(AccessibilityNodeInfo.ACTION_CLICK))
             val slider=node("Volumen de voz")
@@ -56,9 +60,9 @@ class FonyxVoiceBubbleTest {
             touch(MotionEvent.ACTION_DOWN);SystemClock.sleep(150);touch(MotionEvent.ACTION_UP)
             instrumentation.waitForIdleSync()
             assertTrue(calls.contains("mute" to true));assertTrue(calls.contains("deafen" to true))
-            assertTrue(calls.contains("ptt" to true));assertTrue(calls.contains("ptt" to false));assertEquals(.35,volume,.001)
             val directory=File(context.getExternalFilesDir(null),"verification").apply { mkdirs() }
             automation.takeScreenshot()!!.let { image->File(directory,"voice-bubble.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG,100,it) };image.recycle() }
+            assertTrue("PTT down missing: $calls at $bounds",calls.contains("ptt" to true));assertTrue("PTT up missing: $calls",calls.contains("ptt" to false));assertEquals(.35,volume,.001)
             assertTrue(node("Desconectar").performAction(AccessibilityNodeInfo.ACTION_CLICK));instrumentation.waitForIdleSync()
             assertTrue(calls.contains("disconnect" to false))
         } finally {

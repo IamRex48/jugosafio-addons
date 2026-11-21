@@ -12,7 +12,7 @@ import com.oney.WebRTCModule.WebRTCModule
 import java.security.SecureRandom
 
 class FonyxVoiceModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
-    private var microphone = ""
+    @Volatile private var microphone = ""
     init {
         FonyxVoiceService.dispatch = { name, value -> emit(name, value) }
         FonyxVoiceService.volumeChanged = { value ->
@@ -26,6 +26,11 @@ class FonyxVoiceModule(context: ReactApplicationContext) : ReactContextBaseJavaM
         }
     }
     override fun getName() = "FonyxVoice"
+    @ReactMethod fun copyCode(command: String, promise: Promise) {
+        if(!Regex("/vcmc:verify \"[A-Za-z0-9_-]{1,128}\"").matches(command)) { promise.reject("VOICE_CODE", "No hay un código de verificación vigente."); return }
+        val clipboard = reactApplicationContext.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Verificación de voz", command)); promise.resolve(true)
+    }
     private fun emit(name: String, value: Boolean) {
         if (reactApplicationContext.hasActiveReactInstance()) reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit("FonyxVoiceEvent", Arguments.createMap().apply { putString("type", name); putBoolean("value", value) })
     }

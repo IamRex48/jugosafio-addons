@@ -117,6 +117,7 @@ android {
 }
 
 dependencies {
+    implementation('org.jitsi:webrtc:155.0.1') { version { strictly '155.0.1' } }
     implementation(files("libs/fonyx-account.aar"))
     implementation("com.facebook.fresco:animated-webp:3.6.0")
     implementation("com.facebook.fresco:webpsupport:3.6.0")

@@ -7,9 +7,10 @@ export const voiceEvents=new EventEmitter();
 let relay=null,audio=null,starting=false,running=false,generation=0,command='',level=0,stopping=0;
 const nativeEvents=new NativeEventEmitter(native);
 export function voiceState(){return {...relay?.snapshot(),status:relay?.status||'Desconectado',command,peers:audio?[...audio.peers.keys()]:[]};}
+export async function copyVoiceCode(){if(!command)throw new Error('No hay un código de verificación vigente.');return native.copyCode(command);}
 function changed(){native.update(!!audio?.muted||!!audio?.forcedMute,!!audio?.deafened||!!audio?.forcedDeafen,!!relay?.verified,level>5&&!!audio?.canTransmit());voiceEvents.emit('event',{type:'voice-state',value:voiceState()});}
-async function stopVoice(){++stopping;try{const oldRelay=relay,oldAudio=audio;relay=null;audio=null;running=false;command='';level=0;oldRelay?.removeAllListeners();oldRelay?.disconnect();await oldAudio?.stop();await native.stop();changed();}finally{--stopping;}}
-export async function disconnectVoice(){++generation;await stopVoice();starting=false;}
+async function stopVoice(){++stopping;try{const oldRelay=relay,oldAudio=audio;relay=null;audio=null;running=false;command='';level=0;oldRelay?.removeAllListeners();oldRelay?.disconnect();try{await oldAudio?.stop();}finally{await native.stop();changed();}}finally{--stopping;}}
+export async function disconnectVoice(){++generation;try{await stopVoice();}finally{starting=false;}}
 export function voiceControls(values){
  if(!audio)return;
  for(const [key,value] of Object.entries(values))if(key==='volume'?!(Number.isFinite(value)&&value>=0&&value<=1):!['muted','deafened','pttHeld','pushToTalk'].includes(key)||typeof value!=='boolean')throw new Error('Controles de voz inválidos.');
@@ -20,7 +21,8 @@ nativeEvents.addListener('FonyxVoiceEvent',event=>{
  else if(event.type==='deafen')voiceControls({deafened:event.value});
  else if(event.type==='ptt')voiceControls({pttHeld:event.value});
  else if(event.type==='volume')voiceControls({volume:event.value});
- else if(event.type==='focus'){audio?.setControls({focusLost:event.value});changed();}
+ else if(event.type==='copy-code')copyVoiceCode().catch(error=>voiceEvents.emit('event',{type:'warning',message:error.message}));
+ else if(event.type==='focus'){audio?.setControls({focusLost:event.value,...(event.value?{pttHeld:false}:{})});changed();}
  else if(event.type==='disconnect'||event.type==='service-stopped'){if(!stopping&&(running||starting))disconnectVoice().catch(()=>{});}
 });
 AppRegistry.registerHeadlessTask('FonyxVoice',()=>()=>new Promise(resolve=>{
@@ -49,11 +51,11 @@ export async function connectVoice(identity,event,settings){
   relay.on('event',message=>{
    if(current!==generation)return;
    if(message.type==='verified'){command='';audio.setVerified(true);}
-   else if(message.type==='reset')audio.setVerified(false);
+   else if(message.type==='reset'){command='';audio.setVerified(false);}
    else if(message.type==='positions')audio.updatePositions(message.players);
    else if(message.type==='yaw'){audio.yaw=message.yaw;audio.updatePositions(audio.positions);}
    else if(message.type==='signal')audio.receive(message.peer,message.payload).catch(()=>{});
-   else if(message.type==='verification-required')command='/vcmc:verify "'+message.value+'"';
+   else if(message.type==='verification-required'){audio.setVerified(false);command='/vcmc:verify "'+message.value+'"';}
    else if(message.type==='peer-left')audio.remove(message.value.toLowerCase());
    else if(['forced-mute','forced-deafen','self-mute','self-deafen'].includes(message.type))audio.setControls({[{'forced-mute':'forcedMute','forced-deafen':'forcedDeafen','self-mute':'muted','self-deafen':'deafened'}[message.type]]:message.value});
    else if(message.type==='settings'||message.type==='policy'){if(Number.isFinite(message.value.audioRadius))audio.radius=Math.max(1,Math.min(256,message.value.audioRadius));audio.updatePositions(audio.positions);}
