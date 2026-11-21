@@ -86,7 +86,7 @@ async function ping() {
   try {
     const info=await call(api.ping(id));if(event().id!==id||request!==pingSequence) return;
     $('#status-dot').dataset.status=info.online===true?'online':info.online===false?'offline':'unknown';
-    $('#server-state').textContent=info.online===true?'En línea':info.online===false?'Apagado en Aternos':'Estado sin confirmar';
+    $('#server-state').textContent=info.online===true?'En línea':info.online===false?'Servidor apagado':'Estado sin confirmar';
     $('#server-details').textContent=info.online===true?`${info.players} / ${info.max} jugadores · ${info.ping} ms` : info.online===false?'Puedes intentar conectar cuando termine de iniciar.':'Puedes intentar conectar.';
     if(state.admin) $('#admin-diagnostics').textContent=`${event().server}:${event().port} · ${info.protocol || info.message} · ${state.contentSource}`;
   } catch {if(event().id===id&&request===pingSequence){$('#server-state').textContent='Estado sin confirmar';$('#server-details').textContent='Puedes intentar conectar.';$('#status-dot').dataset.status='unknown';}}
@@ -299,7 +299,41 @@ $$('[data-window]').forEach(b=>b.addEventListener('click',()=>api.window(b.datas
 $$('[data-page]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.page)));
 $$('[data-open-settings]').forEach(b=>b.addEventListener('click',openSettings));
 async function configureLauncher(){try{$('#settings-dialog').close();state=await window.fonyxOnboarding.run(await call(api.state()),{force:true});window.fonyxVoice.configure(state.settings);render();ping();}catch(error){toast(error.message);}}
-$$('[data-account-settings]').forEach(b=>b.addEventListener('click',configureLauncher));
+let accountMenuBusy=false;
+function accountMenuState(check){
+  const connected=state.account?.connected;
+  $('#account-menu-title').textContent=connected?state.account.name:'Tu cuenta Microsoft';
+  $('#account-connect').hidden=!!connected;$('#account-signout').hidden=!connected;
+  $('#account-skin').disabled=!connected||!state.settings.profile;
+  const choices=check?.choices||[];$('#account-routes').hidden=!connected||choices.length<2;
+  $('#account-route').replaceChildren(...choices.map(folder=>new Option(folder,folder)));
+  $('#account-route').value=choices.includes(state.settings.profile)?state.settings.profile:choices[0]||'';
+}
+async function accountMenuAction(action){
+  if(accountMenuBusy)return;accountMenuBusy=true;
+  $('#account-menu-status').textContent='Un momento…';
+  $$('#account-menu button,#account-menu select').forEach(element=>element.disabled=true);
+  try{await action();}catch(error){$('#account-menu-status').textContent=error.message;}
+  finally{accountMenuBusy=false;$$('#account-menu button,#account-menu select').forEach(element=>element.disabled=false);$('#account-skin').disabled=!state.account?.connected||!state.settings.profile;}
+}
+$$('[data-account-settings]').forEach(button=>button.addEventListener('click',async()=>{
+  const menu=$('#account-menu');if(menu.matches(':popover-open')){menu.hidePopover();return;}
+  $('#account-menu-status').textContent='';accountMenuState();menu.showPopover();
+  try{const check=await call(api.setupStatus());if(menu.matches(':popover-open'))accountMenuState(check);}catch(error){$('#account-menu-status').textContent=error.message;}
+}));
+$('#account-skin').addEventListener('click',()=>accountMenuAction(async()=>{
+  state=await call(api.chooseAvatar(state.settings.profile,true));renderProfile();$('#account-menu-status').textContent='';
+}));
+$('#account-route-save').addEventListener('click',()=>accountMenuAction(async()=>{
+  const check=await call(api.setupSelectData($('#account-route').value));state=await call(api.state());accountMenuState(check);renderProfile();$('#account-menu-status').textContent='Ubicación guardada.';
+}));
+$('#account-signout').addEventListener('click',()=>accountMenuAction(async()=>{
+  await call(api.voiceSignOut());state=await call(api.state());adminDraft=null;adminDirty=false;render();accountMenuState();$('#account-menu-status').textContent='Sesión cerrada.';
+}));
+$('#account-connect').addEventListener('click',async()=>{
+  $('#account-menu').hidePopover();
+  try{state=await window.fonyxStartupAccount.restore({...state,settings:{...state.settings,setupComplete:true}});render();}catch(error){toast(error.message);}
+});
 $('#reconfigure-setup').addEventListener('click',configureLauncher);
 $$('[data-close-dialog]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
 $$('[data-social]').forEach(b=>b.addEventListener('click',async()=>{try{await call(api.social(b.dataset.social));}catch(error){toast(error.message);}}));
@@ -336,5 +370,5 @@ async function refresh() {if(!state||updating||savingAdmin||page==='admin'||$('#
 api.onVoice(async event=>{if(event.type==='account'&&state){if(!event.connected){state.admin=false;state.adminEligible=false;state.account={name:'',connected:false};adminDraft=null;adminDirty=false;render();}try{const previous=state.account?.name;state=await call(api.state());if(previous!==state.account?.name){adminDraft=null;adminDirty=false;}render();}catch{renderProfile();}}});
 api.onAdministratorsChanged(async()=>{try{state=await call(api.state());if(!state.admin){adminDraft=null;adminDirty=false;}render();}catch{}});
 api.onNavigate(page=>{if(state)navigate(page);});
-async function init() {try{state=await call(api.state());lastContent=JSON.stringify(state.content);render();await window.fonyxIntro.finish({version:state.version,reducedMotion:state.settings.reducedMotion});state=await window.fonyxOnboarding.run(state);window.fonyxVoice.configure(state.settings);render();ping();await call(api.applyHotkeys());setInterval(()=>{if(!document.hidden&&!updating)ping();},45000);setInterval(refresh,30000);}catch(error){toast(error.message);}finally{$('#loading-screen').hidden=true;}}
+async function init() {try{state=await call(api.state());lastContent=JSON.stringify(state.content);render();if(state.settings.setupComplete){state=await window.fonyxStartupAccount.restore(state);render();}await window.fonyxIntro.finish({version:state.version,reducedMotion:state.settings.reducedMotion});state=await window.fonyxOnboarding.run(state);window.fonyxVoice.configure(state.settings);render();ping();await call(api.applyHotkeys());setInterval(()=>{if(!document.hidden&&!updating)ping();},45000);setInterval(refresh,30000);}catch(error){toast(error.message);}finally{$('#loading-screen').hidden=true;}}
 init();

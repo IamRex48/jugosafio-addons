@@ -225,11 +225,10 @@ ipcMain.handle('setup:select-data',guard(async folder=>{
   if(!bridge.identity)throw new Error('Conecta primero tu cuenta Microsoft.');
   const choices=await setup.accountChoices(settings.root);
   if(typeof folder!=='string'||!choices.includes(folder))throw new Error('Esta ubicación ya no está disponible. Vuelve a comprobar.');
-  await setup.dataCheck(folder,true);settings.profile=folder;settings.setupComplete=false;await core.atomicJson(path.join(data,'settings.json'),settings);return setupState();
+  await core.requireClosed();await setup.dataCheck(folder,true);settings.profile=folder;await core.atomicJson(path.join(data,'settings.json'),settings);return setupState();
 }));
 ipcMain.handle('audio:prepare',guard(async()=>{voiceArmed=true;voiceGranted=!!settings.microphoneAllowed;return true;}));
 ipcMain.handle('setup:audio',guard(async value=>{
-  if(!voiceGranted)throw new Error('Prueba el micrófono y permite su uso antes de continuar.');
   Object.assign(settings,setup.audioPreferences(value));await core.atomicJson(path.join(data,'settings.json'),settings);return true;
 }));
 async function connectAccount(){
@@ -244,7 +243,7 @@ ipcMain.handle('account:cancel',guard(async()=>{if(bridge.loginPromise)await bri
 ipcMain.handle('setup:finish',guard(async()=>{
   const check=await setup.status(settings);
   if(!check.rootValid||!check.profileValid||!check.installationValid)throw new Error(check.errors[0]||'Revisa las carpetas de Minecraft.');
-  if(!bridge.identity||!settings.audioConfigured)throw new Error('Completa la cuenta Microsoft y el audio.');
+  if(!bridge.identity)throw new Error('Conecta tu cuenta Microsoft para continuar.');
   settings.setupComplete=true;await core.atomicJson(path.join(data,'settings.json'),settings);return publicState();
 }));
 ipcMain.handle('voice:prepare',guard(async eventId=>{

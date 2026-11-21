@@ -1,7 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
 const shared=require('../packages/core');
-const source=process.env.FONYX_PC_BASE;assert(source,'FONYX_PC_BASE must point to the original PC Fuentes directory');
-const original=require(path.join(source,'src','core.js')),publish=require(path.join(source,'src','github-publish.js'));
+const original=require('./reference/core.cjs'),publish=original;
 function result(fn,value){try{return {value:fn(structuredClone(value))};}catch(e){return {error:e.message};}}
 const pack={uuid:'3960504b-f277-484b-9c7b-c865e19bc50e',version:[2,2,6],kind:'data',url:'https://example.org/test.mcpack',sha256:'a'.repeat(64)};
 test('PC original and shared validation accept and reject the same feeds',()=>{

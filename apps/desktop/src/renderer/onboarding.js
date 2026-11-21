@@ -8,7 +8,7 @@
     for(const element of dialog.querySelectorAll('[data-setup-panel]'))element.hidden=Number(element.dataset.setupPanel)!==step;
     const located=check?.rootValid&&check?.installationValid;
     for(const button of dialog.querySelectorAll('[data-setup-step]')){const index=Number(button.dataset.setupStep);button.disabled=busy||index>step||(index===0&&located);button.setAttribute('aria-current',index===step?'step':'false');button.classList.toggle('complete',index<step);}
-    $('#setup-back').disabled=busy||step===0||(step===1&&located);$('#setup-next').disabled=busy||(step===0&&!located)||(step===1&&!audioReady)||(step===2&&current.account.connected&&!check?.profileValid);
+    $('#setup-back').disabled=busy||step===0||(step===1&&located);$('#setup-next').disabled=busy||(step===0&&!located)||(step===2&&current.account.connected&&!check?.profileValid);
     $('#setup-next').textContent=busy?'Un momento…':step===2?(current.account.connected?'Terminar y entrar':'Conectar Microsoft'):'Continuar';
     $('#setup-location').textContent=check?.root||'No encontrada';$('#setup-executable').textContent=check?.executable||'No encontrado';
     $('#setup-install-card').hidden=!!check?.installationValid;$('#setup-root-card').hidden=!!check?.rootValid;
@@ -29,9 +29,7 @@
     $('#setup-input').disabled=busy||!audioReady;$('#setup-output').disabled=busy||!audioReady;
   }
   async function prepareDevices(){
-    audioReady=false;await call(api.audioPrepare());
-    const permission=await navigator.mediaDevices.getUserMedia({video:false,audio:true});
-    permission.getTracks().forEach(track=>track.stop());await devices();audioReady=true;
+    audioReady=true;await devices();
   }
   async function devices(){
     const list=await navigator.mediaDevices.enumerateDevices();
@@ -68,17 +66,17 @@
     busy=true;render();
     try{
       if(step===0){check=await call(api.setupStatus());if(!check.rootValid||!check.installationValid)throw new Error('Selecciona la instalación y los datos de Minecraft.');step=1;await prepareDevices();}
-      else if(step===1){if(!tested)await microphone();await output();await call(api.setupAudio({inputId:$('#setup-input').value,outputId:$('#setup-output').value}));current.settings.voiceInput=$('#setup-input').value;current.settings.voiceOutput=$('#setup-output').value;await stopAudio();step=2;message('');}
+      else if(step===1){await call(api.setupAudio({inputId:$('#setup-input').value,outputId:$('#setup-output').value}));current.settings.voiceInput=$('#setup-input').value;current.settings.voiceOutput=$('#setup-output').value;await stopAudio();step=2;message('');}
       else{const state=await call(api.setupFinish());await stopAudio();finished=true;dialog.close();resolveRun(state);}
     }catch(error){message(error.name==='NotAllowedError'?'Permite el micrófono para usar la voz obligatoria de Jugosafio.':error.message);}
     finally{busy=false;render();}
   });
-  async function move(index){await stopAudio();step=index;message('');busy=step===1;render();try{if(step===1)await prepareDevices();}catch(error){message('Permite el micrófono para mostrar tus dispositivos. Pulsa Probar micrófono para intentarlo de nuevo.');}finally{busy=false;render();}}
+  async function move(index){await stopAudio();step=index;message('');busy=step===1;render();try{if(step===1)await prepareDevices();}catch(error){message('No se pudieron listar los dispositivos. Puedes continuar con los predeterminados o probar el micrófono cuando quieras.');}finally{busy=false;render();}}
   $('#setup-back').addEventListener('click',()=>move(Math.max(0,step-1)));
   for(const button of dialog.querySelectorAll('[data-setup-step]'))button.addEventListener('click',()=>move(Number(button.dataset.setupStep)));
   for(const button of dialog.querySelectorAll('[data-setup-choose]'))button.addEventListener('click',async()=>{busy=true;message('');render();try{check=await call(api.setupChoose(button.dataset.setupChoose));}catch(error){message(error.message);}finally{busy=false;render();}});
   $('#setup-test-mic').addEventListener('click',async()=>{busy=true;render();try{await microphone();}catch(error){message(error.message);}finally{busy=false;render();}});
-  $('#setup-test-output').addEventListener('click',async()=>{busy=true;render();try{if(!context)await microphone();await output();const tone=context.createOscillator(),gain=context.createGain();gain.gain.setValueAtTime(0,context.currentTime);gain.gain.linearRampToValueAtTime(.06,context.currentTime+.03);gain.gain.linearRampToValueAtTime(0,context.currentTime+.35);tone.frequency.value=523; tone.connect(gain);gain.connect(context.destination);tone.start();tone.stop(context.currentTime+.4);tone.onended=()=>{tone.disconnect();gain.disconnect();};message('Se reprodujo un tono corto por la salida elegida.');}catch(error){message(error.message);}finally{busy=false;render();}});
+  $('#setup-test-output').addEventListener('click',async()=>{busy=true;render();try{if(!context){context=new AudioContext();await context.resume();}await output();const tone=context.createOscillator(),gain=context.createGain();gain.gain.setValueAtTime(0,context.currentTime);gain.gain.linearRampToValueAtTime(.06,context.currentTime+.03);gain.gain.linearRampToValueAtTime(0,context.currentTime+.35);tone.frequency.value=523; tone.connect(gain);gain.connect(context.destination);tone.start();tone.stop(context.currentTime+.4);tone.onended=()=>{tone.disconnect();gain.disconnect();};message('Se reprodujo un tono corto por la salida elegida.');}catch(error){message(error.message);}finally{busy=false;render();}});
   $('#setup-input').addEventListener('change',()=>{tested=false;stopAudio();});$('#setup-output').addEventListener('change',()=>{if(context)output().catch(error=>message(error.message));});
   $('#setup-open-ms').addEventListener('click',()=>call(api.voiceMicrosoft()).catch(error=>message(error.message)));
   $('#setup-exit').addEventListener('click',()=>api.window('quit'));
@@ -92,10 +90,10 @@
   window.fonyxOnboarding={async run(state,{force=false}={}){
     if(dialog.open)throw new Error('La configuración ya está abierta.');
     current=state;check=await call(api.setupStatus());step=check.rootValid&&check.installationValid?1:0;busy=false;tested=false;finished=false;audioReady=false;$('#setup-ms-auth').hidden=true;message('');
-    const ready=check.complete&&check.rootValid&&check.profileValid&&check.installationValid&&check.audioConfigured;
+    const ready=check.complete&&check.rootValid&&check.profileValid&&check.installationValid;
     if(ready&&state.account.connected&&!force)return state;
     const finishedPromise=new Promise(resolve=>{resolveRun=resolve;});
-    if(ready&&!force)step=2;
+    if(check.complete&&!force)step=2;
     render();dialog.showModal();
     if(step===1)await move(1);
     if(ready&&!force){await account();if(current.account.connected&&check.profileValid){const restored=await call(api.setupFinish());finished=true;dialog.close();return restored;}}

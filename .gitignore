@@ -1,5 +1,7 @@
 node_modules/
 .gradle/
+.cxx/
+.kotlin/
 build/
 dist/
 local.properties

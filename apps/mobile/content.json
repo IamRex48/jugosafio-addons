@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "server": "mapajugoR.aternos.me",
+  "port": 19132,
+  "manifestUrl": "https://github.com/IamRex48/jugosafio-addons/releases/download/launcher-v1.2.0/event-jugosafio-20261121-verified.json",
+  "discordApplicationId": "1571574208876642416",
+  "headline": "",
+  "message": "Versión de pruebas admin only",
+  "notices": [],
+  "changes": {
+    "2026-12-19": [
+      {
+        "id": "plan-inicio",
+        "category": "Inicio",
+        "title": "Inicio de Jugosafio R (tentativo)",
+        "text": "Fecha aproximada propuesta por el equipo. Duración prevista: 30 días. Se plantea una dungeon cada cuatro días; fechas y orden por confirmar.",
+        "release": "manual",
+        "published": false,
+        "publishAt": null
+      }
+    ],
+    "2027-01-18": [
+      {
+        "id": "plan-fin",
+        "category": "Fin",
+        "title": "Fin de Jugosafio R (tentativo)",
+        "text": "Fecha aproximada propuesta por el equipo. Pendiente de confirmación.",
+        "release": "manual",
+        "published": false,
+        "publishAt": null
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "jugosafio",
+      "name": "Jugosafio R",
+      "enabled": true,
+      "server": "mapajugoR.aternos.me",
+      "port": 19132,
+      "manifestUrl": "https://github.com/IamRex48/jugosafio-addons/releases/download/launcher-v1.2.0/event-jugosafio-20261121-verified.json",
+      "bankEndpoint": "",
+      "voiceEnabled": false,
+      "voiceOptional": true,
+      "brandingUuid": "",
+      "logo": "assets/jugosafio.png",
+      "studioLogo": "assets/fonyx-jugosafio-animated.webp",
+      "background": "assets/map.png",
+      "accent": "#ffd500",
+      "headline": "",
+      "message": "Versión de pruebas admin only",
+      "notices": [],
+      "changes": {
+        "2026-12-19": [
+          {
+            "id": "plan-inicio",
+            "category": "Inicio",
+            "title": "Inicio de Jugosafio R (tentativo)",
+            "text": "Fecha aproximada propuesta por el equipo. Duración prevista: 30 días. Se plantea una dungeon cada cuatro días; fechas y orden por confirmar.",
+            "release": "manual",
+            "published": false,
+            "publishAt": null
+          }
+        ],
+        "2027-01-18": [
+          {
+            "id": "plan-fin",
+            "category": "Fin",
+            "title": "Fin de Jugosafio R (tentativo)",
+            "text": "Fecha aproximada propuesta por el equipo. Pendiente de confirmación.",
+            "release": "manual",
+            "published": false,
+            "publishAt": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "bedrock",
+      "name": "Experimento Bedrock",
+      "enabled": false,
+      "server": "",
+      "port": 19132,
+      "manifestUrl": "",
+      "bankEndpoint": "",
+      "voiceEnabled": false,
+      "voiceOptional": false,
+      "brandingUuid": "",
+      "logo": "assets/experimento-bedrock.png",
+      "studioLogo": "assets/experimento-bedrock.png",
+      "background": "assets/experimento-bedrock.png",
+      "accent": "#ff8800",
+      "headline": "En desarrollo...",
+      "message": "",
+      "notices": [
+        {
+          "tag": "Aviso",
+          "title": "DESARROLLO!!",
+          "text": "JEJE no se como vamos con esto jeje ola fonder jeje"
+        }
+      ],
+      "changes": {}
+    }
+  ]
+}

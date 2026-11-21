@@ -1,6 +1,9 @@
 {
   "name": "fonyx-unified",
-  "version": "1.2.15-beta.3",
+  "version": "1.2.15-beta.6",
   "private": true,
-  "scripts": {"test": "node --test test/*.test.cjs"}
+  "scripts": {
+    "test": "node --test test/*.test.cjs apps/desktop/test/*.test.js"
+  },
+  "dependencies": {"archiver":"5.3.2","yauzl":"2.10.0"}
 }

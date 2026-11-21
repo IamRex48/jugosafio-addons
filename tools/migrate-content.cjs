@@ -1,0 +1,16 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),pc=path.join(root,'apps/desktop/src/core.js');
+let source=fs.readFileSync(pc,'utf8');
+assert(source.includes('function validateContent('),'Content already migrated');
+const net=process.binding('natives')['internal/net'];
+const grammar=net.slice(net.indexOf('const v4Seg'),net.indexOf('/**')).replace(/const IPv4Reg[^\n]+\n/,'');
+assert(grammar.includes('const IPv6Reg'));
+const a=source.indexOf('function validHost('),b=source.indexOf('const {https,validateFeed}'),c=source.indexOf('function validateContent('),d=source.indexOf('async function readJson(');
+assert(a>=0&&b>a&&c>b&&d>c);
+const host=source.slice(a,b).replace('net.isIP(host)','IPv6Reg.test(host)');
+const validation=source.slice(c,d).replace('Buffer.byteLength(JSON.stringify(result))','utf8Bytes(JSON.stringify(result))');
+const size=`function utf8Bytes(text){let bytes=0;for(let i=0;i<text.length;i++){const code=text.charCodeAt(i);bytes+=code<128?1:code<2048?2:3;if(code>=0xd800&&code<=0xdbff&&i+1<text.length){const next=text.charCodeAt(i+1);if(next>=0xdc00&&next<=0xdfff){bytes++;i++;}}}return bytes;}\n`;
+fs.writeFileSync(path.join(root,'packages/core/content.js'),`// IPv6 grammar adapted from Node.js ${process.version} internal/net.js (MIT; LICENSE.node).\nconst {https}=require('./index');\n${grammar}\n${host}\n${size}\n${validation}\nmodule.exports={connectUri,validateContent,utf8Bytes};\n`);
+source=source.slice(0,a)+`const {connectUri,validateContent}=require('../../../packages/core/content');\n`+source.slice(b,c)+source.slice(d);
+fs.writeFileSync(pc,source);
+console.log('Content, events and server URI validation now share one implementation.');

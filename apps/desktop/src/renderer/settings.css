@@ -1,0 +1,30 @@
+#settings-dialog{width:min(900px,94vw);height:min(650px,88dvh);max-height:88dvh;padding:0;overflow:hidden;border:1px solid #526278;border-radius:10px;background:#101b2b;box-shadow:0 30px 100px #0009}
+#settings-form{display:flex;flex-direction:column;height:100%;min-height:0}
+#settings-dialog .settings-heading{padding:25px 28px 22px;margin:0;border-bottom:1px solid #ffffff13;flex:none;background:#142131}
+.settings-heading small{font:10px 'Segoe UI',sans-serif;letter-spacing:2px;color:#9aafc3}.settings-heading h2{font-size:26px;margin-top:5px}
+#settings-dialog .settings-heading .icon-button{margin:0;width:36px;height:36px}
+.settings-layout{display:grid;grid-template-columns:210px minmax(0,1fr);flex:1;min-height:0}
+.settings-nav{padding:22px 12px;background:#0d1725;border-right:1px solid #ffffff13;display:flex;flex-direction:column;gap:7px}
+.settings-nav button{display:flex;align-items:center;gap:12px;padding:14px 12px;text-align:left;border-radius:4px;background:transparent;color:#9fb0c4;font:13px 'Segoe UI',sans-serif;border:1px solid transparent;transition:background .15s,color .15s}
+.settings-number{font:10px 'Segoe UI',sans-serif;color:#6b819a}
+.settings-nav button:hover{background:#ffffff08;color:#fff}.settings-nav button[aria-selected=true]{background:#ffd46510;color:#ffd465;border-color:#ffd4652b}.settings-nav button[aria-selected=true] .settings-number{color:#ffd465}
+.settings-panels{padding:26px 30px;overflow:auto;min-width:0;scrollbar-gutter:stable}
+.settings-section-heading{margin-bottom:22px}.settings-section-heading h3{font-size:21px;margin:0 0 7px}.settings-section-heading p{font:13px/1.6 'Segoe UI',sans-serif;color:#9fb0c4;margin:0}
+#settings-dialog label,#settings-dialog input,#settings-dialog select,#settings-dialog .secondary-button{font-family:'Segoe UI',sans-serif}
+#settings-dialog .switch-row{padding:18px 0;gap:26px}#settings-dialog .switch-row strong{font:600 14px 'Segoe UI',sans-serif}#settings-dialog .switch-row small{font:12px/1.6 'Segoe UI',sans-serif;max-width:370px;margin-top:6px;color:#9fb0c4}
+#settings-dialog .switch-row input{width:36px;cursor:pointer}#settings-dialog .switch-row input:checked{background:#ffd465}#settings-dialog .switch-row input:checked:before{background:#182130}
+#settings-dialog .form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:8px}#settings-dialog label{font-size:13px}#settings-dialog input,#settings-dialog select{min-height:43px}
+.settings-note{font:12px/1.7 'Segoe UI',sans-serif;color:#9fb0c4;margin:22px 0 0;padding-top:18px;border-top:1px solid #ffffff13}
+#settings-dialog .folder-setting{display:block;margin-top:22px;padding-top:20px}#settings-dialog .folder-setting>div{width:100%}#minecraft-folder{margin-top:10px;font:12px Consolas,monospace!important}#choose-folder{margin:8px 0 0}#settings-dialog .field-hint{font-family:'Segoe UI',sans-serif}
+.settings-footer{border-top:1px solid #ffffff13;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 25px;background:#142131;flex:none}.settings-footer small{font:12px 'Segoe UI',sans-serif;color:#9fb0c4}.settings-footer>div{display:flex;align-items:center;gap:20px}.settings-footer .primary-button{min-height:42px;font-size:13px}
+#loading-screen.startup-screen{gap:12px;background:#0d1826}
+#loading-screen .startup-wordmark{width:370px;height:250px;max-width:80vw;margin:-40px 0 -36px;object-fit:contain;animation:none}
+#loading-screen .startup-title{font-size:29px;font-weight:400;line-height:1.4;margin:0 0 10px;color:#f5f6fa}
+#loading-screen #startup-message{font:13px/1.7 'Segoe UI',sans-serif;color:#a9bacd;max-width:440px}
+#loading-screen .startup-track{margin:16px 0 5px;width:160px;height:2px}#loading-screen .startup-track>span{background:#ffd465}
+@media(max-width:750px){.settings-layout{grid-template-columns:170px minmax(0,1fr)}.settings-panels{padding:22px}.settings-nav button{font-size:12px;gap:8px;padding:12px 8px}.settings-footer small{display:none}}
+@media(prefers-reduced-motion:reduce){.settings-nav button{transition:none}}
+
+#settings-dialog .switch-row input{min-height:0;height:20px;width:36px;padding:0}
+
+.account-menu{position:fixed;inset:95px 30px auto auto;margin:0;width:320px;max-width:90vw;padding:20px;background:#142131;color:#eff3fa;border:1px solid #526278;border-radius:8px;box-shadow:0 20px 50px #0009;font:13px 'Segoe UI',sans-serif}.account-menu::backdrop{background:transparent}.account-menu header{display:flex;flex-direction:column;gap:8px;padding:0 4px 16px;border-bottom:1px solid #ffffff15;margin-bottom:10px}.account-menu header small{font-size:9px;letter-spacing:2px;color:#9aafc3}.account-menu header strong{font-size:17px}.account-menu>button,#account-route-save{width:100%;text-align:left;background:transparent;color:#eef3fa;padding:12px 10px;border-radius:4px;font:13px 'Segoe UI',sans-serif}.account-menu button:hover{background:#ffffff0c}.account-menu .account-signout{color:#f2b0a8;border-top:1px solid #ffffff15;margin-top:12px;border-radius:0}.account-menu-note{font-size:11px;line-height:1.5;color:#9aafc3;margin:0 10px 12px}#account-routes{padding:12px 0;border-top:1px solid #ffffff15}#account-routes label{display:block;font-size:12px;margin:0 0 8px}#account-route{font:11px Consolas,monospace;max-width:100%}#account-menu-status{font-size:12px;line-height:1.6;margin:8px 4px 0;color:#ffd465;overflow-wrap:anywhere}#account-menu-status:empty{display:none}

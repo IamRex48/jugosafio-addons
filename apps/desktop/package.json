@@ -1,6 +1,6 @@
 {
   "name": "fonyx-launcher",
-  "version": "1.2.15-beta.3",
+  "version": "1.2.15-beta.6",
   "description": "El punto de encuentro de Fonyx Studios. Launcher de eventos de Minecraft Bedrock.",
   "main": "src/main.js",
   "author": "Fonyx Studios",
