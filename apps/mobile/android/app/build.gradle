@@ -85,7 +85,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 121506
-        versionName new groovy.json.JsonSlurper().parse(file("../../package.json")).version
+        versionName new groovy.json.JsonSlurper().parse(file("../../../../package.json")).version
         externalNativeBuild {
             cmake {
                 // Windows 8.3 compiler paths lose the ++ suffix; keep the C++ linker driver explicit.

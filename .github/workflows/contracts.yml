@@ -21,8 +21,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - run: javac --release 17 -d verification/crypto apps/mobile/android/app/src/main/java/com/helloworld/IdentityCrypto.java test/IdentityCryptoTest.java
+      - run: javac --release 17 -d verification/crypto apps/mobile/android/app/src/main/java/com/helloworld/IdentityCrypto.java apps/mobile/android/app/src/main/java/com/helloworld/PackDownload.java test/IdentityCryptoTest.java test/PackDownloadTest.java
       - run: java -ea -cp verification/crypto studios.fonyx.launcher.IdentityCryptoTest
+      - run: java -ea -cp verification/crypto studios.fonyx.launcher.PackDownloadTest
   desktop-payload:
     runs-on: windows-latest
     steps:
