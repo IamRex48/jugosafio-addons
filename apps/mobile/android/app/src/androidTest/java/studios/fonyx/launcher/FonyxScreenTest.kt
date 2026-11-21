@@ -16,17 +16,24 @@ import java.io.File
 class FonyxScreenTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
 
-    private fun find(node: AccessibilityNodeInfo?, text: String): AccessibilityNodeInfo? {
+    private fun find(node: AccessibilityNodeInfo?, matches: (AccessibilityNodeInfo) -> Boolean): AccessibilityNodeInfo? {
         if (node == null) return null
-        if (node.text?.toString() == text || node.contentDescription?.toString() == text) return node
-        for (index in 0 until node.childCount) { val match = find(node.getChild(index), text); if (match != null) return match }
+        if (matches(node)) return node
+        for (index in 0 until node.childCount) { val match = find(node.getChild(index), matches); if (match != null) return match }
         return null
     }
 
     private fun waitFor(text: String): AccessibilityNodeInfo {
         val deadline = SystemClock.uptimeMillis() + 25000
         while (SystemClock.uptimeMillis() < deadline) {
-            val node = find(instrumentation.uiAutomation.rootInActiveWindow, text)
+            val root = instrumentation.uiAutomation.rootInActiveWindow
+            // A fresh emulator can show Android's fullscreen tutorial above the application.
+            if (find(root) { it.packageName == "android" && it.viewIdResourceName == "android:id/immersive_cling_title" } != null) {
+                find(root) { it.packageName == "android" && it.viewIdResourceName == "android:id/ok" }?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                SystemClock.sleep(150)
+                continue
+            }
+            val node = find(root) { it.text?.toString() == text || it.contentDescription?.toString() == text }
             if (node != null) return node
             SystemClock.sleep(150)
         }
