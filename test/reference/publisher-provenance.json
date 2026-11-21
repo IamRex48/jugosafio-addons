@@ -1,0 +1,7 @@
+{
+  "normalization": "UTF-8 with LF newlines",
+  "sourceCommit": "3e99eb0c3c94ad38a3d2095d78e02d0293badf88",
+  "source": "apps/desktop/src/github-publish.js",
+  "sourceSha256": "5087cf8e93c59301387fac302a17f6966f42741995128d1f61a0e0af1e00c53f",
+  "frozenFunctionsSha256": "2b95cdc88d9b3992f5697261594e49dc940e69b7ce956c9416b2ee0c8e4dd04b"
+}

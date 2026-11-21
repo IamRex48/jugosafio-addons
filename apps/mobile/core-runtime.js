@@ -6,5 +6,6 @@ module.exports={
  ...require('../../packages/core/bank'),
  ...require('../../packages/core/addon-bridge'),
  ...require('../../packages/core/relay-session'),
+ ...require('../../packages/core/github-publish'),
  wire:require('../../packages/core/relay-protocol'),
 };

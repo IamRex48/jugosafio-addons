@@ -4,14 +4,14 @@ Este árbol es de desarrollo. La APK Android todavía NO tiene la paridad requer
 
 - `docs/00-auditoria-android.md`: matriz y restricciones reales.
 - `docs/vcmc-235-interoperabilidad.md`: hechos observados del cliente móvil; no contiene su código.
-- `packages/core`: manifiestos, eventos, calendario, plan de addons, banco, identidad y señalización de voz. Sin Electron ni acceso al sistema; los adaptadores resuelven archivos, red y criptografía.
+- `packages/core`: manifiestos, eventos, calendario, plan de addons, banco, identidad, señalización de voz y publicación. Sin Electron ni acceso al sistema; los adaptadores resuelven archivos, red y criptografía.
 - `apps/desktop`: copia de trabajo de la base aportada, con quickfixes beta.6 conservados. La build original y el respaldo no se modifican.
 - `apps/mobile`: vistas nativas React Native/Hermes y adaptador Kotlin de packs. Cuenta, voz, banco, administración y actualizador aún no están implementados con paridad.
 - `MODLOG.md`: resultados, bloqueos, compilaciones y continuación.
 
 ## Pruebas locales
 
-Ejecutar `npm ci` y `npm test` desde esta carpeta. La referencia de contratos PC beta.3 está congelada en test/reference, con hashes de procedencia; no se cambia para hacer pasar pruebas. Hay 44 tests, incluidos 17 existentes de PC sin modificar. No son pruebas de Android ni de una partida.
+Ejecutar `npm ci` y `npm test` desde esta carpeta. Las referencias de contratos PC están congeladas en test/reference, con hashes de procedencia; no se cambian para hacer pasar pruebas. Hay 46 tests, incluidos 17 existentes de PC sin modificar y 14 escenarios del publicador comparados contra la implementación anterior. No son pruebas de Android ni de una partida.
 
 Android requiere JDK17, SDK36, build-tools36, NDK27 y las dependencias fijadas en package-lock. En este PC se localizaron dentro de Unity. `local.properties` es local, no se versiona. Java puede usar las CA de Windows con `JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStoreType=Windows-ROOT -Djavax.net.ssl.trustStore=NONE`, sin desactivar TLS.
 
