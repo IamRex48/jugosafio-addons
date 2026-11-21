@@ -1,0 +1,10 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),pc=path.join(root,'apps/desktop/src/voice/relay-protocol.js');
+const original=fs.readFileSync(pc,'utf8');assert(!original.startsWith('module.exports'),'Relay already migrated');
+fs.writeFileSync(path.join(root,'test/reference/relay-protocol.cjs'),original);
+const decoder=`function strictUtf8(bytes){const text=bytes.toString('utf8');if(!Buffer.from(text,'utf8').equals(bytes))throw new TypeError('The encoded data was not valid for encoding utf-8');return text.charCodeAt(0)===0xfeff?text.slice(1):text;}\n`;
+let portable=original.replaceAll("new TextDecoder('utf-8',{fatal:true}).decode(",'strictUtf8(');
+assert(!portable.includes('TextDecoder'));
+portable="const {Buffer}=require('buffer');\n"+decoder+portable;
+fs.writeFileSync(path.join(root,'packages/core/relay-protocol.js'),portable);
+fs.writeFileSync(pc,"module.exports=require('../../../../packages/core/relay-protocol');\n");

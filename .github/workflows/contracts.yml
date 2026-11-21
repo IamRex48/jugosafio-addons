@@ -17,3 +17,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm test
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4, verified tag
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: javac --release 17 -d verification/crypto apps/mobile/android/app/src/main/java/com/helloworld/IdentityCrypto.java test/IdentityCryptoTest.java
+      - run: java -ea -cp verification/crypto studios.fonyx.launcher.IdentityCryptoTest

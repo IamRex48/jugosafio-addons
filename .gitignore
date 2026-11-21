@@ -17,3 +17,4 @@ verification/
 .env*
 tools/package/
 tools/*.tgz
+apps/mobile/android/app/src/main/assets/shared-core-build.json
