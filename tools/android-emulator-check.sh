@@ -7,7 +7,7 @@ test -n "$app_apk" && test -n "$test_apk"
 adb install -r "$app_apk"
 adb install -r "$test_apk"
 adb logcat -c
-trap 'adb logcat -d > verification/android-emulator/logcat.txt || true' EXIT
+trap 'adb logcat -d > verification/android-emulator/logcat.txt || true; adb pull /sdcard/Android/data/studios.fonyx.launcher/files/verification/. verification/android-emulator/final-state/ || true' EXIT
 run_checks() {
   local name=$1
   adb shell am instrument -w studios.fonyx.launcher.test/androidx.test.runner.AndroidJUnitRunner | tee "verification/android-emulator/$name-results.txt"

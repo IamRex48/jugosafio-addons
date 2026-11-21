@@ -30,6 +30,18 @@ class FonyxScreenTest {
             if (node != null) return node
             SystemClock.sleep(150)
         }
+        try {
+            capture("failure")
+            val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "verification")
+            val tree = StringBuilder()
+            fun describe(node: AccessibilityNodeInfo?, depth: Int) {
+                if (node == null || depth > 15 || tree.length > 100000) return
+                tree.append(" ".repeat(depth)).append(node.toString()).append('\n')
+                for (index in 0 until node.childCount) describe(node.getChild(index), depth + 1)
+            }
+            describe(instrumentation.uiAutomation.rootInActiveWindow, 0)
+            File(directory, "accessibility-failure.txt").writeText(tree.toString())
+        } catch (_: Exception) { }
         throw AssertionError("Native screen did not show: $text")
     }
 
