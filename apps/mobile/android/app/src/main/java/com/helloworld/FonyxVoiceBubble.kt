@@ -90,7 +90,7 @@ class FonyxVoiceBubble(private val context: Context, private val action: (String
         button("Abrir Fonyx",R.drawable.voice_home) { context.startActivity(Intent(context,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)) }
         button("Desconectar",R.drawable.voice_close) { action("disconnect",false) }
         controls.addView(grid)
-        controls.addView(SeekBar(context).apply { max=100;progress=100;contentDescription="Volumen de voz";setOnSeekBarChangeListener(object:SeekBar.OnSeekBarChangeListener {
+        controls.addView(SeekBar(context).apply { max=100;progress=100;contentDescription="Volumen de voz";progressTintList=ColorStateList.valueOf(Color.WHITE);thumbTintList=ColorStateList.valueOf(Color.WHITE);progressBackgroundTintList=ColorStateList.valueOf(Color.GRAY);setOnSeekBarChangeListener(object:SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar:SeekBar?,value:Int,fromUser:Boolean) { if(fromUser)volumeChanged(value/100.0) }
             override fun onStartTrackingTouch(bar:SeekBar?) {}
             override fun onStopTrackingTouch(bar:SeekBar?) {}

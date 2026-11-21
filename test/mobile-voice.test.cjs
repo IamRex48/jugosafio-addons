@@ -17,12 +17,12 @@ function fixture(capture){
  }});
  return {audio:new module.exports.MobileVoiceAudio(),track,stream,registered};
 }
-test('Android microphone remains gated by verification, PTT, focus and server mute',async()=>{
+test('Android microphone remains gated by verification, PTT and server mute',async()=>{
  const {audio,track,registered}=fixture();
  try{
   await audio.start({name:'rex'});assert.equal(track.enabled,false);assert.deepEqual(registered,['mic']);
   audio.setVerified(true);assert.equal(track.enabled,true);
-  for(const control of ['muted','deafened','forcedMute','forcedDeafen','focusLost']){
+  for(const control of ['muted','deafened','forcedMute','forcedDeafen']){
    audio.setControls({[control]:true});assert.equal(track.enabled,false,control);
    audio.setControls({[control]:false});assert.equal(track.enabled,true,control);
   }
@@ -39,8 +39,8 @@ test('Android remote gain follows distance, verification and deafen',()=>{
  audio.applySpatial(peer,peer.spatial);assert.equal(volume,0);
  audio.verified=true;audio.setControls({volume:.5});assert.equal(volume,.2);
  audio.setControls({deafened:true});assert.equal(volume,0);assert.equal(remote.enabled,false);
- audio.setControls({deafened:false,focusLost:true});assert.equal(volume,0);
- audio.setControls({focusLost:false});assert.equal(volume,.2);assert.equal(remote.enabled,true);
+ audio.setControls({deafened:false,forcedDeafen:true});assert.equal(volume,0);
+ audio.setControls({forcedDeafen:false});assert.equal(volume,.2);assert.equal(remote.enabled,true);
 });
 test('Android cancellation discards late microphone capture without registering it',async()=>{
  let release;const {audio,registered}=fixture(()=>new Promise(resolve=>release=resolve));

@@ -87,6 +87,7 @@ class FonyxScreenTest {
         }
         assertTrue("Launcher must be landscape", bounds.width() > bounds.height())
         waitFor("Jugar"); SystemClock.sleep(700); capture("home")
+        assertNull("Android must not show PC window controls",find(instrumentation.uiAutomation.rootInActiveWindow) { it.contentDescription?.toString() in setOf("Minimizar","Maximizar","Cerrar") })
         tab("Ajustes"); waitFor("El launcher mientras juegas."); capture("settings")
         tab("Cerrar ajustes"); tab("Chat de voz"); waitFor("Desconectado"); capture("voice")
     }

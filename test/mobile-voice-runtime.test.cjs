@@ -49,7 +49,6 @@ test('mobile voice uses initial addon command, gates verification and cleans up 
  f.relays[0].emit('event',{type:'verification-required',value:'replacement'});assert.equal(f.audios[0].verified,false);
  f.relays[0].emit('event',{type:'reset'});assert.equal(f.api.voiceState().command,'');
  f.events.emit('FonyxVoiceEvent',{type:'ptt',value:true});assert.equal(f.audios[0].pttHeld,true);
- f.events.emit('FonyxVoiceEvent',{type:'focus',value:true});assert.equal(f.audios[0].pttHeld,false);
  f.events.emit('FonyxVoiceEvent',{type:'ptt',value:false});assert.equal(f.audios[0].pttHeld,false);
  f.events.emit('FonyxVoiceEvent',{type:'volume',value:.3});assert.equal(f.audios[0].volume,.3);
  assert.throws(()=>f.api.voiceControls({verified:true}));

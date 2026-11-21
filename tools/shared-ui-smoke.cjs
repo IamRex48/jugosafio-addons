@@ -22,6 +22,7 @@ app.on('browser-window-created',(_,window)=>{
  window.webContents.on('did-finish-load',async()=>{
   try{
    await new Promise(resolve=>setTimeout(resolve,2500));
+   if(!await window.webContents.executeJavaScript("['Minimizar','Maximizar','Cerrar'].every(label=>document.querySelector('[aria-label=\"'+label+'\"]'))"))throw new Error('Desktop window controls missing');
    async function capture(file){await window.webContents.capturePage();await new Promise(resolve=>setTimeout(resolve,150));fs.writeFileSync(path.join(output,file),(await window.webContents.capturePage()).toPNG());}
    await capture('shared-ui-home.png');
    await window.webContents.executeJavaScript("document.querySelector('[aria-label=\"Ajustes\"]').click()");

@@ -38,3 +38,10 @@ Además se contrastó WebRtcSpeakerOutput con JADX: es un mezclador PCM con cola
 
 
 Extensión pedida por el usuario: controles por iconos y segundo overlay para PTT, con bloqueo, movimiento y posición persistente. No se afirma que ese segundo control proceda del APK original: es una función solicitada para Fonyx sobre la base WindowManager contrastada. Se añade FLAG_SPLIT_TOUCH a los overlays para que mantener pulsado PTT permita tocar Minecraft con otros dedos. Los recursos comunes son los iconos propios del launcher PC; no se extraen imágenes propietarias de VCMC.
+
+
+## Ruta de audio de juego contrastada en el APK real
+
+JADX1.5.7 también descompiló MainActivity (SHA256091658b88511791e395f49c7b0f2a705c13f3281aed0c67aa901e221c7321ed7) y VcmcAudioDsp (SHA2569b409fe5766028d4fee340b2df0e939656d233b43743f71c16aa32b3a55fd321), guardados solo en private-analysis. MainActivity.applyGameAudioRoute establece MODE_NORMAL, limpia la selección de comunicación desdeAPI31 y usa STREAM_MUSIC; applyCallAudioRoute es un modo distinto. VcmcAudioDsp.outputUsageFor devuelve14 (USAGE_GAME), y crea AudioAttributes con contentType1 (SPEECH).
+
+Fonyx configura el AudioDeviceModule público de WebRTC con GAME/SPEECH, compartido por producción y el test de audio. El servicio usa la ruta normal del sistema y elimina la solicitud de foco exclusivo de llamada: el diseño anterior podía marcar perdida de foco al abrir el juego y cortar la voz. El test exige observar reproducción nativa USAGE_GAME además de Opus/muestras/bytes en ambos sentidos. No se copió el DSP ni su JNI. Aún falta paneo estéreo nativo y prueba de convivencia real con Minecraft/auriculares/llamadas en un teléfono.

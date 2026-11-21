@@ -1,6 +1,9 @@
 package studios.fonyx.launcher
 
 import android.content.Intent
+import android.content.Context
+import android.media.AudioManager
+import android.media.AudioAttributes
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
@@ -12,7 +15,6 @@ import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.webrtc.*
-import org.webrtc.audio.JavaAudioDeviceModule
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
@@ -57,7 +59,7 @@ class FonyxRtcTest {
         instrumentation.uiAutomation.executeShellCommand("pm grant ${context.packageName} android.permission.RECORD_AUDIO").use { ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));SystemClock.sleep(1000)
         PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions())
-        val device=JavaAudioDeviceModule.builder(context).setEnableVolumeLogger(false).setUseHardwareAcousticEchoCanceler(false).setUseHardwareNoiseSuppressor(false).createAudioDeviceModule()
+        val device=createVoiceAudioDevice(context)
         device.setSpeakerMute(true)
         val factory=PeerConnectionFactory.builder().setAudioDeviceModule(device).createPeerConnectionFactory()
         val source=factory.createAudioSource(MediaConstraints())
@@ -80,7 +82,12 @@ class FonyxRtcTest {
                 if(receivedA.first>0&&receivedB.first>0&&receivedA.second>0&&receivedB.second>0) break
             }
             val directory=File(context.getExternalFilesDir(null),"verification").apply { mkdirs() }
-            File(directory,"native-rtc.json").writeText(JSONObject().put("samplesReceivedA",receivedA.first).put("samplesReceivedB",receivedB.first).put("bytesReceivedA",receivedA.second).put("bytesReceivedB",receivedB.second).put("physicalMicrophoneUsed",false).put("speakersMuted",true).toString())
+            val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val outputDeadline=SystemClock.uptimeMillis()+3000
+            while(SystemClock.uptimeMillis()<outputDeadline && audio.activePlaybackConfigurations.none { it.audioAttributes.usage==AudioAttributes.USAGE_GAME })SystemClock.sleep(100)
+            val gameOutput=audio.activePlaybackConfigurations.any { it.audioAttributes.usage==AudioAttributes.USAGE_GAME }
+            File(directory,"native-rtc.json").writeText(JSONObject().put("samplesReceivedA",receivedA.first).put("samplesReceivedB",receivedB.first).put("bytesReceivedA",receivedA.second).put("bytesReceivedB",receivedB.second).put("gameAudioOutput",gameOutput).put("physicalMicrophoneUsed",false).put("speakersMuted",true).toString())
+            assertTrue("Voice must use the game/media output route",gameOutput)
             assertTrue("Android A received no decoded Opus packets: $receivedA",receivedA.first>0&&receivedA.second>0);assertTrue("Android B received no decoded Opus packets: $receivedB",receivedB.first>0&&receivedB.second>0)
             trackA.setEnabled(false);assertFalse(trackA.enabled())
         } finally { a.close();b.close();a.dispose();b.dispose();trackA.dispose();trackB.dispose();source.dispose();factory.dispose();device.release() }

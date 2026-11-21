@@ -13,7 +13,6 @@ export class MobileVoiceAudio extends NativeVoiceAudio{
    this.meterTimer=setInterval(()=>this.measureLevel(generation),200);this.onChange();
   }catch(error){await this.stop();throw error;}
  }
- canTransmit(){return !this.focusLost&&super.canTransmit();}
  async measureLevel(generation){
   let level=0;
   try{const peer=this.peers.values().next().value;if(this.canTransmit()&&peer){const stats=await peer.sender.getStats();for(const entry of stats.values())if(entry.type==='media-source'&&entry.kind==='audio'&&Number.isFinite(entry.audioLevel))level=Math.min(100,Math.round(entry.audioLevel*300));}}catch{}
@@ -21,7 +20,8 @@ export class MobileVoiceAudio extends NativeVoiceAudio{
  }
  applyControls(){if(this.stream)for(const track of this.stream.getAudioTracks())track.enabled=this.canTransmit();for(const peer of this.peers.values())this.applySpatial(peer,peer.spatial);this.onChange();}
  attachRemote(peer,stream){peer.remoteTrack=stream.getAudioTracks()[0];this.applySpatial(peer,peer.spatial);this.onChange();}
- applySpatial(peer,position){if(peer.remoteTrack){peer.remoteTrack.enabled=!this.deafened&&!this.forcedDeafen&&!this.focusLost;peer.remoteTrack._setVolume(this.verified&&!this.deafened&&!this.forcedDeafen&&!this.focusLost?Math.max(0,Math.min(1,this.volume*position.gain)):0);}}
+ // shortcut: Android applies distance gain; implement and calibrate a native stereo mixer before claiming pan parity.
+ applySpatial(peer,position){if(peer.remoteTrack){peer.remoteTrack.enabled=!this.deafened&&!this.forcedDeafen;peer.remoteTrack._setVolume(this.verified&&!this.deafened&&!this.forcedDeafen?Math.max(0,Math.min(1,this.volume*position.gain)):0);}}
  async setOutput(id=''){if(id)throw new Error('Elige Predeterminado del sistema para la salida de audio.');}
  async setInput(id=''){if(id)throw new Error('Selecciona el micrófono antes de conectar la voz.');}
 }

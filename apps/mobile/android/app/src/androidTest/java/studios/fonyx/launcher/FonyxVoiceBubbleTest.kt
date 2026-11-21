@@ -90,12 +90,23 @@ class FonyxVoiceBubbleTest {
             assertEquals("PTT placement must survive toggling the mode",moved,bounds("Pulsar para hablar"))
             val directory=File(context.getExternalFilesDir(null),"verification").apply { mkdirs() }
             automation.takeScreenshot()!!.let { image->File(directory,"voice-bubble.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG,100,it) };image.recycle() }
+            context.startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            SystemClock.sleep(1000)
+            val outside=automation.takeScreenshot()!!
+            File(directory,"voice-over-home.png").outputStream().use { outside.compress(Bitmap.CompressFormat.PNG,100,it) }
+            for(label in listOf("Burbuja de voz","Pulsar para hablar")) {
+                val rect=bounds(label)
+                assertTrue("Overlay must remain visible outside Fonyx: $label $rect",node(label).isVisibleToUser && rect.left>=0 && rect.top>=0 && rect.right<=outside.width && rect.bottom<=outside.height)
+            }
+            outside.recycle()
+            gesture(bounds("Pulsar para hablar"),cancel=true)
             assertTrue(calls.contains("mute" to true));assertTrue(calls.contains("deafen" to true));assertEquals(.35,volume,.001)
             assertTrue(node("Desconectar").performAction(AccessibilityNodeInfo.ACTION_CLICK));instrumentation.waitForIdleSync();assertTrue(calls.contains("disconnect" to false))
         } finally {
             instrumentation.runOnMainSync { bubble?.close() }
             preferences.edit().clear().commit()
             automation.executeShellCommand("appops set ${context.packageName} SYSTEM_ALERT_WINDOW default").close()
+            context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
 }
