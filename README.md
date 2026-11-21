@@ -6,12 +6,13 @@ Este árbol es de desarrollo. La APK Android todavía NO tiene la paridad requer
 - `docs/vcmc-235-interoperabilidad.md`: hechos observados del cliente móvil; no contiene su código.
 - `packages/core`: manifiestos, eventos, calendario, plan de addons, banco, identidad, señalización de voz y publicación. Sin Electron ni acceso al sistema; los adaptadores resuelven archivos, red y criptografía.
 - `apps/desktop`: copia de trabajo de la base aportada, con quickfixes beta.6 conservados. La build original y el respaldo no se modifican.
+- `packages/ui`: escena común React Native para Android y React Native Web para PC, en horizontal y tomando la interfaz original como referencia. La migración funcional aún no está completa; PC estable conserva el renderer anterior.
 - `apps/mobile`: vistas nativas React Native/Hermes y adaptador Kotlin de packs. Cuenta, voz, banco, administración y actualizador aún no están implementados con paridad.
 - `MODLOG.md`: resultados, bloqueos, compilaciones y continuación.
 
 ## Pruebas locales
 
-Ejecutar `npm ci` y `npm test` desde esta carpeta. Las referencias de contratos PC están congeladas en test/reference, con hashes de procedencia; no se cambian para hacer pasar pruebas. Hay 46 tests, incluidos 17 existentes de PC sin modificar y 14 escenarios del publicador comparados contra la implementación anterior. No son pruebas de Android ni de una partida.
+Ejecutar `npm ci` y `npm test` desde esta carpeta. Las referencias de contratos PC están congeladas en test/reference, con hashes de procedencia; no se cambian para hacer pasar pruebas. Hay 48 tests, incluidos 17 existentes de PC sin modificar y 14 escenarios del publicador comparados contra la implementación anterior. No son pruebas de Android ni de una partida.
 
 Android requiere JDK17, SDK36, build-tools36, NDK27 y las dependencias fijadas en package-lock. En este PC se localizaron dentro de Unity. `local.properties` es local, no se versiona. Java puede usar las CA de Windows con `JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStoreType=Windows-ROOT -Djavax.net.ssl.trustStore=NONE`, sin desactivar TLS.
 
@@ -20,3 +21,5 @@ Ejecutar `node tools/build-stamp.cjs` desde la raíz antes de compilar Android. 
 Las pruebas Java de firmas y descargas se ejecutan con JDK17, igual que en `.github/workflows/contracts.yml`. El descargador conserva parciales tras un corte de red, valida Content-Range al continuar y comprueba el SHA completo antes de permitir la importación. Si el servidor ignora Range, reinicia el archivo; si rechaza el rango, lo descarta y permite reintentar desde cero.
 
 La variante release de la plantilla usa firma **debug** exclusivamente para esta prueba. No es una clave de distribución ni debe usarse para publicar actualizaciones de usuarios. No introducir sesiones Microsoft, keystores privados ni binarios VCMC en este repositorio.
+
+Compilar la escena compartida para Electron: `node tools/build-shared-ui.cjs`. El harness `tools/shared-ui-smoke.cjs` la abre con el backend PC real y un perfil aislado; no es la entrada estable ni una prueba de paridad completa.

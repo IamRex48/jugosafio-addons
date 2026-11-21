@@ -11,8 +11,8 @@ trap 'adb logcat -d > verification/android-emulator/logcat.txt || true' EXIT
 run_checks() {
   local name=$1
   adb shell am instrument -w studios.fonyx.launcher.test/androidx.test.runner.AndroidJUnitRunner | tee "verification/android-emulator/$name-results.txt"
-  if ! grep -q 'OK (4 tests)' "verification/android-emulator/$name-results.txt"; then
-    echo "Instrumentation did not pass all four native/UI tests."
+  if ! grep -q 'OK (5 tests)' "verification/android-emulator/$name-results.txt"; then
+    echo "Instrumentation did not pass all five native/UI tests."
     return 1
   fi
   mkdir -p "verification/android-emulator/$name"

@@ -2,6 +2,7 @@ package studios.fonyx.launcher
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -53,8 +54,10 @@ class FonyxScreenTest {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: throw AssertionError("Launcher activity missing")
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         waitFor("Fonyx Launcher")
-        waitFor("Elige tu aventura."); capture("events")
-        tab("Ajustes"); waitFor("Tu cuenta Microsoft"); capture("settings")
-        tab("Estado"); waitFor("Prueba nativa."); capture("status")
+        val bounds = Rect(); instrumentation.uiAutomation.rootInActiveWindow.getBoundsInScreen(bounds)
+        assertTrue("Launcher must be landscape", bounds.width() > bounds.height())
+        waitFor("Jugar"); SystemClock.sleep(700); capture("home")
+        tab("Ajustes"); waitFor("El launcher mientras juegas."); capture("settings")
+        tab("Cerrar ajustes"); tab("Chat de voz"); waitFor("Desconectado"); capture("voice")
     }
 }

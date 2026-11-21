@@ -39,6 +39,6 @@ class FonyxFilesModule(context: ReactApplicationContext) : ReactContextBaseJavaM
 }
 
 class FonyxFilesPackage : ReactPackage {
-    override fun createNativeModules(context: ReactApplicationContext) = listOf<NativeModule>(FonyxFilesModule(context), FonyxCryptoModule(context))
+    override fun createNativeModules(context: ReactApplicationContext) = listOf<NativeModule>(FonyxFilesModule(context), FonyxCryptoModule(context), FonyxPlatformModule(context))
     override fun createViewManagers(context: ReactApplicationContext) = emptyList<com.facebook.react.uimanager.ViewManager<*, *>>()
 }

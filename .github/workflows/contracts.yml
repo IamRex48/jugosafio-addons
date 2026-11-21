@@ -36,6 +36,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - run: node tools/build-shared-ui.cjs
       - run: node tools/build-desktop-payload.cjs
   android-compilation:
     runs-on: ubuntu-latest

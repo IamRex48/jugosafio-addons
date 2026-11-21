@@ -8,7 +8,11 @@ for(const relative of ['src','assets','package.json']){
  fs.cpSync(path.join(root,'apps/desktop',relative),target,{recursive:true});
 }
 fs.cpSync(path.join(root,'packages/core'),path.join(stage,'packages/core'),{recursive:true});
-fs.cpSync(path.join(root,'node_modules'),path.join(stage,'node_modules'),{recursive:true,filter:file=>path.basename(file)!=='.bin'});
+const lock=require('../package-lock.json');
+fs.cpSync(path.join(root,'node_modules'),path.join(stage,'node_modules'),{recursive:true,filter:file=>{
+ const relative=path.relative(root,file).split(path.sep).join('/');
+ return path.basename(file)!=='.bin'&&lock.packages[relative]?.dev!==true;
+}});
 fs.copyFileSync(path.join(root,'apps/desktop/launcher-content.json'),path.join(stage,'launcher-content.json'));
 fs.mkdirSync(path.join(stage,'assets'));fs.copyFileSync(path.join(root,'apps/desktop/assets/icon.ico'),path.join(stage,'assets/icon.ico'));
 const {version}=require('../package.json');
