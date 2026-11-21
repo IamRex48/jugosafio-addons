@@ -1,0 +1,15 @@
+node_modules/
+.gradle/
+build/
+dist/
+local.properties
+*.apk
+*.xapk
+*.so
+*.exe
+*.jks
+*.keystore
+*.hbc
+private-analysis/
+verification/
+.env*
