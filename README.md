@@ -6,9 +6,9 @@ Este repositorio aloja las publicaciones que consulta Fonyx Launcher. La raíz t
 
 | Ubicación | Uso |
 |---|---|
-| Releases → `launcher-v1.2.0` | Configuración que actualmente resuelve `releases/latest`, lista de administradores y un EXE antiguo. El nombre del tag no identifica la versión del launcher en pruebas. |
+| Releases → `launcher-v1.2.0` | Configuración activa corregida, manifiesto fijo de 14 packs, RP de voz, lista de administradores y un EXE antiguo. El nombre del tag no identifica la versión del launcher en pruebas. |
 | Releases → `v0.3.5` | Archivos de addons aportados para el servidor y otro manifiesto. El nombre del tag tampoco representa la versión de todos los addons que contiene. |
-| `docs/publication-status.md` | Fallos observados, fuentes activas y alcance de la revisión. |
+| `docs/publication-status.md` | Reparación publicada, duplicados, dependencia pendiente y alcance de la revisión. |
 | `docs/server-migration.md` | Revisión de la propuesta R2/Worker y pasos que aún requieren alojamiento y pruebas reales. |
 | `scripts/check-publication.cjs` | Comprobador de configuración, referencias a assets, hashes declarados y UUID. Solo lee; no publica ni elimina. |
 | `Launcher.cs`, `SelfTest.cs`, `build.ps1`, `publish.py`, `test_publish.py`, `config.json`, `branding/` | Prototipo anterior conservado para recuperación. Su guía original está en `docs/legacy-launcher.md`. |

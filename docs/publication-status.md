@@ -1,31 +1,28 @@
-# Estado observado — 20 de noviembre de 2026
+# Publicación corregida — 21 de noviembre de 2026
 
-Revisión de solo lectura de las releases públicas y del código local 1.2.15-beta.6. No se ejecutó una partida, no se publicó una actualización ni se modificaron assets.
+Se corrigieron los assets reales de GitHub Releases. Esta operación no instala addons en Aternos ni publica un ejecutable nuevo.
 
-## Fallo que bloquea las descargas
+## Publicación activa
 
-La API `releases/latest` devuelve `launcher-v1.2.0`. Su `launcher-content.json` contiene para Jugosafio:
+- La release `launcher-v1.2.0` mantiene el endpoint `releases/latest` que consultan los clientes; su tag es histórico.
+- `launcher-content.json` apunta, en el campo general y en Jugosafio, al manifiesto fijo `event-jugosafio-20261121-verified.json` de esa misma release. `event-manifest.json` es su espejo de compatibilidad.
+- Hay 14 UUID únicos. Los 13 originales de `v0.3.5` se contrastaron con los archivos descargados: SHA-256, UUID, versión y tipo internos. Se añadió el RP requerido por el BP de voz 2.2.6.
+- `VCMC-Recursos-Fonyx-Gris-2.2.6-HUD-Jugosafio-0.4.27.mcpack` deriva del parche gris local. Sus 12 archivos compartidos con el RP actual de Jugosafio se copiaron de este y se compararon byte por byte, incluido su HUD. Conserva UUID y versión requeridos y los créditos de Naru.
+- Los JSON anteriores se conservan como assets `*-backup-repair-20261121-*.json`; no se eliminaron ni renombraron packs existentes.
+- Ambas releases distinguen archivos activos, históricos, duplicados y límites de la revisión en sus descripciones.
 
-`https://github.com/IamRex48/jugosafio-addons/releases/latest/download/event-manifest.json`
+Las tres URLs inexistentes dejaron de formar parte de la publicación activa. GitHub puede conservar temporalmente redirecciones antiguas; contrastar con la API de assets y las URLs por tag.
 
-Ese manifiesto todavía referencia tres archivos de `v0.3.5` que ya no están en la lista de assets. Las tres URLs devolvieron **HTTP 404** en la revisión:
+## Duplicado excluido
 
-- `143fd6c0-c67c-4e36-9baa-68884ec01b62-1.0.0.mcpack`
-- `cde3a46f-2e53-49cc-b16e-ea8c86bf1e2f-0.3.5.mcpack`
-- `04657d52-888f-4947-b932-65fa3d63b56c-0.3.5.mcpack`
+`JugoBoses.mcaddon` independiente contiene BP/RP 1.0.0. El combinado de Jugosafio incorpora los mismos UUID con versión 1.0.1. Solo se referencian estos últimos. La copia antigua permanece disponible, claramente señalada.
 
-La verificación SHA-256 no puede arreglar una URL inexistente. Cambiar el README o añadir R2 tampoco repara por sí solo esa cadena. Es necesario preparar y verificar un conjunto de packs válido y publicar una configuración que lo referencie.
+## Pendiente del conjunto del servidor
 
-## Otra publicación disponible
+Portal Gun BP `610ea4ac-ce32-4d02-b55c-79c4319a2b4e` 1.1.1 declara dependencia RP `41ce5e06-7daa-4169-9e9b-9e32b835c4de` 1.1.1, mientras el combinado trae RP 1.1.2. Se registró la discrepancia sin alterar el addon dentro de una reparación de enlaces. Debe corregirse también en el conjunto que utiliza Aternos.
 
-`v0.3.5/event-manifest.json` contiene 13 entradas y usa varios archivos combinados `.mcaddon`. El código local 1.2.15 sí tiene `locatePack` para buscar packs anidados: el formato combinado no demuestra por sí mismo un fallo. Antes de usar ese manifiesto hay que comprobar el hash de cada archivo y encontrar dentro de él cada UUID/versión/tipo declarados, sin asumir compatibilidad con todos los clientes viejos.
+## Validación y límites
 
-No se cambió automáticamente el puntero al otro manifiesto: es una publicación distinta y no se validó su contenido completo contra el servidor activo.
+El comprobador remoto devuelve `ok: true`, sin assets ausentes ni diferencias con los digests publicados. Sus advertencias genéricas sobre `.mcaddon` no sustituyen la comprobación interna realizada.
 
-## Configuración y fuentes
-
-- La publicación consultada tiene `voiceEnabled: false` en Jugosafio y `bankEndpoint` vacío. El repo no demuestra que exista un servicio bancario activo.
-- La raíz describe un launcher C# antiguo, con instrucciones de branding que ya no corresponden a la beta 1.2.15. Se conserva su guía como documentación histórica.
-- Las fuentes Electron actuales están en las entregas locales, no en la rama principal consultada. Subirlas exige preparar una copia limpia que excluya motores privados, credenciales, cachés y binarios; no mezclar a ciegas el proyecto C# con el actual.
-
-El nuevo comprobador detecta las tres referencias rotas, UUID repetidos, metadatos inválidos, dependencias declaradas ausentes y discrepancias entre SHA-256 declarados y digests de assets cuando GitHub los proporciona. La lectura de metadatos no reemplaza descargar y verificar el archivo real.
+No se probó una partida, el HUD renderizado ni voz con Aternos. Se conservaron `voiceEnabled: false`, `bankEndpoint` vacío y las direcciones. El EXE 1.2.0 sigue siendo histórico; las fuentes Electron actuales aún no están integradas en la rama principal.
