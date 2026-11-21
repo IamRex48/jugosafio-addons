@@ -1,9 +1,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {geometry,pageTitle}=require('../packages/ui/layout');
+const {geometry,measuredBounds,pageTitle}=require('../packages/ui/layout');
 test('shared landscape geometry preserves desktop proportions on phone and tablet',()=>{
  for(const [width,height] of [[1240,800],[1920,1080],[640,320],[2560,1600]]){const g=geometry(width,height);assert(g.width>=1000);assert.equal(g.width*g.scale,width);assert.equal(g.height*g.scale,height);}
  assert.deepEqual(geometry(1240,800),{width:1240,height:800,scale:1});
  assert.throws(()=>geometry(0,800));assert.throws(()=>geometry(NaN,800));
+ const last={width:1240,height:800};assert.equal(measuredBounds(last,{width:0,height:0}),last);assert.equal(measuredBounds(last,{width:NaN,height:800}),last);assert.deepEqual(measuredBounds(last,{width:1920,height:1080}),{width:1920,height:1080});
  assert.equal(pageTitle('notices',{name:'Jugosafio R'}),'Avisos de Jugosafio R');
 });
 test('shared icons come from the desktop SVG symbols and both apps import one scene',()=>{

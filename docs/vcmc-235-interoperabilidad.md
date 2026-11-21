@@ -23,3 +23,13 @@ Androguard confirmó estas firmas, sin copiar cuerpos de métodos al proyecto:
 - aapt2 confirmó VcmcOverlayService: exported=false, stopWithTask=false y foregroundServiceType=0x82 (micrófono + reproducción). No inferir que esos atributos impidan que Android mate el proceso.
 
 La documentación oficial consultada describe el SDK como herramienta de backend/extensiones, no como motor cliente móvil redistribuible. El Admin Toolkit tiene licencia PolyForm Noncommercial 1.0.0 y excluye control/verificaciones propietarios. No sustituye automáticamente nuestro puente de autenticación. Fuente: https://antoic.com/docs/vcmc.html (secciones SDK y Admin Toolkit).
+
+## Servicio de burbuja contrastado con JADX 1.5.7
+
+Se descompiló `com.naru.vcmc.VcmcOverlayService` del APK base real del XAPK2.3.5 proporcionado. Referencia privada fuera de Git: `C:/Users/Admin/.codex/private-analysis/vcmc-2.3.5/VcmcOverlayService.java`, SHA256 `fa1ae8035d7637ded0117decbf6e709de332cc21580ef0dce2e067df7cae82a9`. No se incorporan sus fuentes ni sus imágenes al launcher.
+
+Observado: WindowManager TYPE_APPLICATION_OVERLAY2038, flags520 (NOT_FOCUSABLE + LAYOUT_NO_LIMITS), PixelFormat TRANSLUCENT, anclaje superior izquierdo, arrastre, menú expandido, mute/deafen, volumen, abrir aplicación y detener. Comprueba Settings.canDrawOverlays y retira la ventana al destruirse. Sus controles llaman a callbacks de MainActivity hacia Flutter. El cuerpo de este servicio no contiene startForeground; el atributo del manifiesto no prueba que lo ejecute por sí mismo.
+
+Fonyx implementa ese comportamiento con código propio en FonyxVoiceBubble y lo conecta a su motor WebRTC compartido con PC. Añade un servicio de micrófono/reproducción con notificación y Headless JS para Android; START_NOT_STICKY evita prometer recuperación automática del micrófono tras muerte del proceso. PTT libera en UP/CANCEL y al cerrar. El indicador usa audioLevel real de las estadísticas WebRTC cuando hay un peer; queda negro sin transmisión y blanco al hablar. Sin peers no se calcula nivel. La ganancia Android sigue distancia/dimensión y volumen global; el paneo estéreo Android aún no está implementado.
+
+Los contratos de señalización proceden del cliente PC previamente contrastado. La descompilación Android no demuestra por sí sola todos los opcodes Dart de2.3.5. Falta probar una cuenta real y audio entre Minecraft/dispositivos, cambio de red y treinta minutos con pantalla bloqueada. La prueba de burbuja en emulador no graba ni transmite audio.

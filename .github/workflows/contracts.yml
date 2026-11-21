@@ -52,6 +52,20 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm ci --prefix apps/mobile --no-audit --no-fund
       - run: node tools/build-stamp.cjs
+      - name: Build our native Microsoft provider from source
+        working-directory: native/accountengine
+        env:
+          GOTOOLCHAIN: go1.27.4
+        run: |
+          go version
+          go test ./...
+          go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20261117202452-47699113848a
+          go install golang.org/x/mobile/cmd/gobind@v0.0.0-20261117202452-47699113848a
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'ndk;27.2.12479018' >/dev/null || test -d "$ANDROID_HOME/ndk/27.2.12479018"
+          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
+          mkdir -p ../../apps/mobile/android/app/libs
+          gomobile bind -target android/arm64,android/amd64 -androidapi 29 -javapkg studios.fonyx.auth -o ../../apps/mobile/android/app/libs/fonyx-account.aar .
       - name: Generate a disposable test signing key
         run: keytool -genkeypair -keystore apps/mobile/android/app/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 365 -dname "CN=Fonyx CI Debug,O=Fonyx,C=MX"
       - name: Compile APK (test signing, no release publication)
