@@ -7,6 +7,8 @@ import android.os.SystemClock
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -74,7 +76,15 @@ class FonyxScreenTest {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: throw AssertionError("Launcher activity missing")
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         waitFor("Fonyx Launcher")
-        val bounds = Rect(); instrumentation.uiAutomation.rootInActiveWindow.getBoundsInScreen(bounds)
+        val bounds = Rect(); val deadline=SystemClock.uptimeMillis()+10000
+        while(SystemClock.uptimeMillis()<deadline) {
+            instrumentation.runOnMainSync {
+                ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
+                    .firstOrNull { it is MainActivity }?.window?.decorView?.getGlobalVisibleRect(bounds)
+            }
+            if(bounds.width()>bounds.height()) break
+            SystemClock.sleep(150)
+        }
         assertTrue("Launcher must be landscape", bounds.width() > bounds.height())
         waitFor("Jugar"); SystemClock.sleep(700); capture("home")
         tab("Ajustes"); waitFor("El launcher mientras juegas."); capture("settings")
