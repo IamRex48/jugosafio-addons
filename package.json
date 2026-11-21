@@ -1,0 +1,10 @@
+{
+  "name": "fonyx-publication-checks",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test test/*.test.cjs",
+    "check:publication": "node scripts/check-publication.cjs"
+  },
+  "engines": { "node": ">=22" }
+}
