@@ -7,7 +7,7 @@ const {geometry,pageTitle}=require('./layout');
 const calendar=require('../core/calendar');
 
 export default function Launcher({api,initialState}){
- const [state,setState]=useState(initialState),[selected,setSelected]=useState('jugosafio'),[page,setPage]=useState('home'),[modal,setModal]=useState(''),[notice,setNotice]=useState(''),[bounds,setBounds]=useState({width:1240,height:800}),[status,setStatus]=useState({online:null}),[revil,setRevil]=useState(false);
+ const [state,setState]=useState(initialState),[selected,setSelected]=useState('jugosafio'),[page,setPage]=useState('home'),[modal,setModal]=useState(''),[notice,setNotice]=useState(''),[bounds,setBounds]=useState({width:1240,height:800}),[status,setStatus]=useState({online:null}),[revil,setRevil]=useState(false),[authCode,setAuthCode]=useState('');
  const event=state.content.events.find(item=>item.id===selected)||state.content.events[0],g=geometry(bounds.width,bounds.height),accent=event.accent;
  async function call(name,...args){if(!api[name])return;const result=await api[name](...args);if(result?.ok===false)throw new Error(result.error);return result?.ok===true?result.value:result;}
  async function action(name,...args){try{return await call(name,...args);}catch(error){setNotice(error.message);}}
@@ -15,7 +15,7 @@ export default function Launcher({api,initialState}){
  async function ping(){if(!event.enabled)return;const info=await action('ping',event.id);if(info)setStatus(info);}
  useEffect(()=>{refresh();const timer=setInterval(refresh,30000);return()=>clearInterval(timer);},[]);
  useEffect(()=>{setStatus({online:null});ping();},[event.id]);
- useEffect(()=>api.onVoice?.(message=>{if(message.type==='account')refresh();}),[api]);
+ useEffect(()=>api.onVoice?.(message=>{if(message.type==='account')refresh();if(message.type==='microsoft-code')setAuthCode(message.code);}),[api]);
  function navigate(next){setPage(next);setRevil(false);setNotice('');}
  function select(id){setSelected(id);navigate('home');}
  const title=pageTitle(page,event),account=state.account||{name:'',connected:false};
@@ -35,7 +35,8 @@ export default function Launcher({api,initialState}){
    </View>
   </View>
   {modal==='settings'&&<Settings state={state} onClose={()=>setModal('')} onSave={async settings=>{const next=await action('saveSettings',settings);if(next){setState(next);setModal('');}}} onSetup={()=>setModal('account')} onUpdate={()=>action('update',event.id)}/>}
-  {modal==='account'&&<Pressable style={s.accountBackdrop} onPress={()=>setModal('')}><Pressable accessibilityRole="none" onPress={()=>{}} style={s.accountMenu}><T style={{fontSize:9,letterSpacing:2,color:'#9aafc3'}}>TU CUENTA</T><T bold style={{fontSize:17,marginVertical:12}}>{account.name||'Tu cuenta Microsoft'}</T>{!account.connected&&<Button disabled={!api.accountConnect} onPress={async()=>{const next=await action('accountConnect');if(next){await refresh();setModal('');}}}>Conectar Microsoft</Button>}<Button disabled={!account.connected||!state.settings.profile} onPress={()=>action('chooseAvatar',state.settings.profile,true)}>Subir skin PNG</Button><T style={{fontSize:11,color:'#9aafc3',marginVertical:12}}>Usa la cara de tu skin como avatar del launcher.</T>{account.connected&&<Button onPress={async()=>{await action('voiceSignOut');await refresh();setModal('');}}>Cerrar sesión</Button>}</Pressable></Pressable>}
+  {modal==='account'&&<Pressable style={s.accountBackdrop} onPress={()=>setModal('')}><Pressable accessibilityRole="none" onPress={()=>{}} style={s.accountMenu}><T style={{fontSize:9,letterSpacing:2,color:'#9aafc3'}}>TU CUENTA</T><T bold style={{fontSize:17,marginVertical:12}}>{account.name||'Tu cuenta Microsoft'}</T>{!account.connected&&<Button disabled={!api.accountConnect} onPress={async()=>{setAuthCode('');setModal('startup');const next=await action('accountConnect');if(next){await refresh();setModal('');}else setModal('account');}}>Conectar Microsoft</Button>}<Button disabled={!account.connected||!state.settings.profile} onPress={()=>action('chooseAvatar',state.settings.profile,true)}>Subir skin PNG</Button><T style={{fontSize:11,color:'#9aafc3',marginVertical:12}}>Usa la cara de tu skin como avatar del launcher.</T>{account.connected&&<Button onPress={async()=>{await action('voiceSignOut');await refresh();setModal('');}}>Cerrar sesión</Button>}</Pressable></Pressable>}
+  {modal==='startup'&&<View style={{...StyleSheet.absoluteFillObject,top:36,backgroundColor:'#0d1826',alignItems:'center',justifyContent:'center',gap:12}}><Image source={imageSource('assets/fonyx-classic.png')} style={{width:370,height:250,resizeMode:'contain',marginTop:-40,marginBottom:-36}}/><T style={{fontSize:29,lineHeight:40.6,marginBottom:10}}>Fonyx Launcher</T><T style={{fontSize:13,color:'#a9bacd'}}>{authCode?'Microsoft necesita confirmar tu sesión. Abre Microsoft e introduce este código con tu propia cuenta.':'Conectando tu cuenta Microsoft…'}</T>{!!authCode&&<><T style={{fontSize:24,letterSpacing:4}}>{authCode}</T><Button onPress={()=>action('voiceMicrosoft')}>Abrir Microsoft</Button></>}<Button onPress={async()=>{await action('accountCancel');setModal('account');}}>Salir</Button></View>}
   {!!notice&&<Pressable onPress={()=>setNotice('')} style={s.toast}><T style={{fontSize:13}}>{notice}</T></Pressable>}
  </View></View></Accent.Provider>;
 }
