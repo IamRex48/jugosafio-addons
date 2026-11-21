@@ -21,24 +21,27 @@ class FonyxVoiceBubble(private val context: Context, private val action: (String
         if (overlay != null || !Settings.canDrawOverlays(context)) return
         val root = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(4), dp(4), dp(4), dp(4)); background = shape(Color.BLACK) }
         val handle = TextView(context).apply { text = "VC"; textSize = 16f; setTextColor(Color.WHITE); gravity = Gravity.CENTER; contentDescription = "Chat de voz"; layoutParams = LinearLayout.LayoutParams(dp(56), dp(48)) }
-        val controls = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
-        fun button(label: String, click: () -> Unit): Button = Button(context).apply { text = label; setOnClickListener { click() }; controls.addView(this) }
+        val controls = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+        val scroll = ScrollView(context).apply { visibility = View.GONE; layoutParams = LinearLayout.LayoutParams(dp(220),minOf(dp(336),(resources.displayMetrics.heightPixels-dp(64)).coerceAtLeast(dp(48)))); addView(controls,FrameLayout.LayoutParams(-1,-2)) }
+        fun button(label: String, click: () -> Unit): Button = Button(context).apply { text = label; isAllCaps = false; textSize = 12f; setTextColor(Color.WHITE); backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(42,42,42)); setOnClickListener { click() }; controls.addView(this,LinearLayout.LayoutParams(-1,dp(48))) }
         button("Silenciar micrófono") { action("mute", !muted) }
         button("Dejar de escuchar") { action("deafen", !deafened) }
         button("Pulsar para hablar") {}.apply { setOnTouchListener { _, event -> when(event.actionMasked) { MotionEvent.ACTION_DOWN -> action("ptt", true); MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> action("ptt", false) }; true } }
         button("Copiar comando") { action("copy-code", false) }
-        controls.addView(SeekBar(context).apply { max = 100; progress = 100; contentDescription = "Volumen de voz"; minimumWidth = dp(200); setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        controls.addView(SeekBar(context).apply { max = 100; progress = 100; contentDescription = "Volumen de voz"; setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar?, value: Int, fromUser: Boolean) { if(fromUser) volumeChanged(value / 100.0) }
             override fun onStartTrackingTouch(bar: SeekBar?) {}
             override fun onStopTrackingTouch(bar: SeekBar?) {}
-        }) })
+        }) },LinearLayout.LayoutParams(-1,dp(48)))
         button("Abrir Fonyx") { context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)) }
         button("Desconectar") { action("disconnect", false) }
-        root.addView(handle); root.addView(controls)
-        val position = WindowManager.LayoutParams(-2, -2, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, PixelFormat.TRANSLUCENT).apply { gravity = Gravity.TOP or Gravity.LEFT; x = 0; y = 200 }
-        handle.setOnClickListener { controls.visibility = if(controls.visibility == View.VISIBLE) View.GONE else View.VISIBLE; root.post {
-            if(overlay === root) { position.x = position.x.coerceIn(0,(resources.displayMetrics.widthPixels-root.width).coerceAtLeast(0)); position.y = position.y.coerceIn(0,(resources.displayMetrics.heightPixels-root.height).coerceAtLeast(0)); windows.updateViewLayout(root,position) }
-        } }
+        root.addView(handle); root.addView(scroll)
+        val position = WindowManager.LayoutParams(dp(64), -2, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, PixelFormat.TRANSLUCENT).apply { gravity = Gravity.TOP or Gravity.LEFT; x = 0; y = 200 }
+        handle.setOnClickListener { scroll.visibility = if(scroll.visibility == View.VISIBLE) View.GONE else View.VISIBLE; position.width = dp(if(scroll.visibility == View.VISIBLE) 228 else 64); windows.updateViewLayout(root,position) }
+        root.addOnLayoutChangeListener { _,_,_,_,_,_,_,_,_ ->
+            val x=position.x.coerceIn(0,(resources.displayMetrics.widthPixels-root.width).coerceAtLeast(0));val y=position.y.coerceIn(0,(resources.displayMetrics.heightPixels-root.height).coerceAtLeast(0))
+            if(overlay === root && (x!=position.x||y!=position.y)) { position.x=x;position.y=y;windows.updateViewLayout(root,position) }
+        }
         var initialX = 0; var initialY = 0; var downX = 0f; var downY = 0f; var moved = false
         handle.setOnTouchListener { _, event ->
             when(event.actionMasked) {

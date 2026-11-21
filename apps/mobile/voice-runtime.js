@@ -24,7 +24,10 @@ nativeEvents.addListener('FonyxVoiceEvent',event=>{
  else if(event.type==='volume')voiceControls({volume:event.value});
  else if(event.type==='copy-code')copyVoiceCode().catch(error=>voiceEvents.emit('event',{type:'warning',message:error.message}));
  else if(event.type==='focus'){audio?.setControls({focusLost:event.value,...(event.value?{pttHeld:false}:{})});changed();}
- else if(event.type==='disconnect'||event.type==='service-stopped'){if(!stopping&&(running||starting))disconnectVoice().catch(()=>{});}
+ else if(event.type==='disconnect'||event.type==='service-stopped'||event.type==='overlay-error'){
+  if(event.type==='overlay-error')voiceEvents.emit('event',{type:'warning',message:'No se pudo abrir la burbuja de voz. Se desconectó el micrófono.'});
+  if(!stopping&&(running||starting))disconnectVoice().catch(()=>{});
+ }
 });
 AppRegistry.registerHeadlessTask('FonyxVoice',()=>()=>new Promise(resolve=>{
  if(!running&&!starting){resolve();return;}

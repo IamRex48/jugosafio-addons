@@ -50,6 +50,8 @@ class FonyxVoiceBubbleTest {
             instrumentation.runOnMainSync { bubble=FonyxVoiceBubble(context,{name,value->calls.add(name to value)},{volume=it}); bubble!!.show() }
             assertTrue(node("VC").performAction(AccessibilityNodeInfo.ACTION_CLICK))
             SystemClock.sleep(300)
+            val menuBounds=Rect();node("Silenciar micrófono").getBoundsInScreen(menuBounds)
+            assertTrue("Bubble menu must not wrap every word",menuBounds.width()>150*context.resources.displayMetrics.density)
             assertTrue(node("Silenciar micrófono").performAction(AccessibilityNodeInfo.ACTION_CLICK))
             assertTrue(node("Dejar de escuchar").performAction(AccessibilityNodeInfo.ACTION_CLICK))
             val slider=node("Volumen de voz")
@@ -63,6 +65,7 @@ class FonyxVoiceBubbleTest {
             val directory=File(context.getExternalFilesDir(null),"verification").apply { mkdirs() }
             automation.takeScreenshot()!!.let { image->File(directory,"voice-bubble.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG,100,it) };image.recycle() }
             assertTrue("PTT down missing: $calls at $bounds",calls.contains("ptt" to true));assertTrue("PTT up missing: $calls",calls.contains("ptt" to false));assertEquals(.35,volume,.001)
+            node("Desconectar").performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_ON_SCREEN.id);SystemClock.sleep(200)
             assertTrue(node("Desconectar").performAction(AccessibilityNodeInfo.ACTION_CLICK));instrumentation.waitForIdleSync()
             assertTrue(calls.contains("disconnect" to false))
         } finally {

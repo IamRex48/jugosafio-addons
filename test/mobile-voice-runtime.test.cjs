@@ -74,3 +74,9 @@ test('native microphone service is stopped even when JS audio teardown fails',as
  f.audios[0].stop=async()=>{throw new Error('track cleanup');};
  await assert.rejects(f.api.disconnectVoice(),/track cleanup/);assert.equal(f.calls.at(-1),'service-stop');
 });
+test('a failed overlay stops voice rather than leaving a microphone without floating controls',async()=>{
+ const f=fixture();await f.api.connectVoice(identity,event,{});const warnings=[];
+ f.api.voiceEvents.on('event',value=>{if(value.type==='warning')warnings.push(value.message);});
+ f.events.emit('FonyxVoiceEvent',{type:'overlay-error'});await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(f.api.voiceState().status,'Desconectado');assert.equal(f.calls.at(-1),'service-stop');assert.equal(warnings.length,1);
+});
