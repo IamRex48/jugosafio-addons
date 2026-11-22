@@ -14,10 +14,7 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    WindowInsetsControllerCompat(window, window.decorView).apply {
-      systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-      hide(WindowInsetsCompat.Type.systemBars())
-    }
+    hideSystemBars()
     // Android 15+ draws behind system bars; keep native content outside their touch area.
     val content = findViewById<View>(android.R.id.content)
     ViewCompat.setOnApplyWindowInsetsListener(content) { view, insets ->
@@ -26,6 +23,18 @@ class MainActivity : ReactActivity() {
       insets
     }
     ViewCompat.requestApplyInsets(content)
+  }
+
+  override fun onWindowFocusChanged(hasFocus: Boolean) {
+    super.onWindowFocusChanged(hasFocus)
+    if (hasFocus) hideSystemBars()
+  }
+
+  private fun hideSystemBars() {
+    WindowInsetsControllerCompat(window, window.decorView).apply {
+      systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+      hide(WindowInsetsCompat.Type.systemBars())
+    }
   }
 
   /**

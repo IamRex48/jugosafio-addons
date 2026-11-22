@@ -79,3 +79,6 @@ Se retiran minimizar/maximizar/cerrar de Android: esos controles solo se renderi
 
 CI85f2926 aprobó los8 tests nativos en Android10/13/14/15, teléfono y tablet, incluida salida GAME y Opus bidireccional. La captura fuera de Fonyx reveló recorte durante cambio de orientación: los overlays ahora usan WindowContext del display y recolocan sin sobrescribir la posición elegida. El test exige recibir una pulsación real fuera del launcher y restaurar la posición al volver. Launcher mantiene sensorLandscape y declara categoría game; su activación en modos juego depende del fabricante. Se libera además MediaStream al detener o cancelar captura, separando tracks antes de destruirlos.68 contratos Node y compilación APK/instrumentación aprobados; nueva ejecución del overlay pendiente.
 
+
+CI f15f287: Android15 teléfono/tablet aprueba los8 tests; captura real sobre Home confirma ambos flotantes completos y PTT recibe pulsación. Android10 teléfono detecta24px de desplazamiento al regresar: MainActivity solo ocultaba barras en onCreate. Se reaplica pantalla completa al recuperar foco para restaurar el mismo espacio de juego; se conserva la aserción de posición exacta.
+
