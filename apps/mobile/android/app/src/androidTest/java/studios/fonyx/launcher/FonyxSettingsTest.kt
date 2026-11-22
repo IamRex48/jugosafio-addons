@@ -28,10 +28,11 @@ class FonyxSettingsTest {
             assertTrue(ready.await(10, TimeUnit.SECONDS)); return result
         }
         try {
-            assertEquals("resolve", save("""{"reducedMotion":true,"loadingStyle":"diamond"}"""))
+            assertEquals("resolve", save("""{"reducedMotion":true,"loadingStyle":"diamond","setupComplete":true}"""))
             assertTrue(JSONObject(preferences.getString("settings", "{}")!!).getBoolean("reducedMotion"))
+            assertTrue(JSONObject(preferences.getString("settings", "{}")!!).getBoolean("setupComplete"))
             for (invalid in listOf("""{"access_token":"secret"}""", """{"accountName":"someone else"}""", """{"discord":"yes"}""", """{"loadingStyle":"unknown"}""")) assertEquals("reject", save(invalid))
-            assertEquals(2, JSONObject(preferences.getString("settings", "{}")!!).length())
+            assertEquals(3, JSONObject(preferences.getString("settings", "{}")!!).length())
         } finally { preferences.edit().apply { if (original == null) remove("settings") else putString("settings", original) }.commit(); module.invalidate() }
     }
 }

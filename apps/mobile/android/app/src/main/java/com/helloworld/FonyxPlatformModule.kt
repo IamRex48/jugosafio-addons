@@ -15,7 +15,7 @@ class FonyxPlatformModule(context: ReactApplicationContext) : ReactContextBaseJa
         try {
             require(value.length <= 16384) { "Los ajustes superan el tamaño permitido." }
             val settings = JSONObject(value)
-            val booleans = setOf("discord", "trustEvents", "vanillaMenu", "reducedMotion", "trayOnPlay", "userView")
+            val booleans = setOf("discord", "trustEvents", "vanillaMenu", "reducedMotion", "trayOnPlay", "userView", "setupComplete")
             val strings = setOf("root", "profile", "voiceInput", "voiceOutput", "voiceMicMode", "loadingStyle")
             for (key in settings.keys()) {
                 when {

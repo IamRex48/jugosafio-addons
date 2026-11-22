@@ -88,9 +88,12 @@ class FonyxScreenTest {
             SystemClock.sleep(150)
         }
         assertTrue("Launcher must be landscape", bounds.width() > bounds.height())
-        waitFor("Jugar"); SystemClock.sleep(700); capture("home")
+        waitFor("Antes de jugar.");waitFor("Tu voz. Tu salida.");capture("first-audio")
         assertNull("Android must not show PC window controls",find(instrumentation.uiAutomation.rootInActiveWindow) { it.contentDescription?.toString() in setOf("Minimizar","Maximizar","Cerrar") })
-        tab("Ajustes"); waitFor("El launcher mientras juegas."); capture("settings")
-        tab("Cerrar ajustes"); tab("Chat de voz"); waitFor("Desconectado"); capture("voice")
+        tab("Continuar");waitFor("Entra con tu cuenta.")
+        assertTrue("Own Microsoft login must be available",waitFor("Conectar Microsoft").isEnabled)
+        assertNull("A fresh install must not expose Play before Microsoft login",find(instrumentation.uiAutomation.rootInActiveWindow) { it.text?.toString()=="Jugar" })
+        assertNull("Microsoft is mandatory",find(instrumentation.uiAutomation.rootInActiveWindow) { it.text?.toString()=="Terminar y entrar" })
+        capture("first-account")
     }
 }

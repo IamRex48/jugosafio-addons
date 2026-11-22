@@ -1,5 +1,5 @@
 import {voiceState,voiceEvents,connectVoice,disconnectVoice,voiceControls,copyVoiceCode} from './voice-runtime';
-import {account} from './account';
+import {account,restoreAccount} from './account';
 import {Linking,NativeModules} from 'react-native';
 const {initialState,settings:defaults}=require('../../packages/ui/initial-state');
 const {loadContent}=require('./content-source');
@@ -17,6 +17,8 @@ async function snapshot(){if(platform){const saved=JSON.parse(await platform.set
 async function json(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error(`HTTP ${response.status}`);const text=await response.text();if(text.length>2*1024*1024)throw new Error('La publicaciÃ³n supera 2 MB.');return JSON.parse(text);}finally{clearTimeout(timer);}}
 export {initialState};
 export const api={
+ initialize:async()=>{await snapshot();let startupError='';try{await restoreAccount();}catch(error){startupError=error.message;}return ok({...await snapshot(),startupError});},
+ finishSetup:async()=>{if(!account.identity)throw new Error('Conecta tu cuenta Microsoft primero.');const next={...settings,setupComplete:true};await platform.saveSettings(JSON.stringify(next));settings=next;return ok(await snapshot());},
  voiceCopyCode:async()=>ok(await copyVoiceCode()),
  voiceDisconnect:async()=>{await disconnectVoice();return ok(true);},
  voiceControls:async value=>{voiceControls(value);return ok(voiceState());},

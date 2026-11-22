@@ -20,3 +20,8 @@ class Engine extends EventEmitter{
 }
 async function json(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error('Servicio de identidad no disponible.');const text=await response.text();if(text.length>1024*1024)throw new Error('Respuesta de identidad demasiado grande.');return JSON.parse(text);}finally{clearTimeout(timer);}}
 export const account=new AddonBridge({engine:new Engine(),loadKeys:()=>identityKeys(json),verifyIdentity:verifyAccountProof,nonce:()=>NativeModules.FonyxCrypto.randomNonce()});
+export async function restoreAccount(){
+ if(account.identity)return;
+ const session=await account.engine.request('ping');
+ if(session.savedSignIn)await account.login();
+}

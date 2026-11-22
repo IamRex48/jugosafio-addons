@@ -3,22 +3,26 @@ import {Image,ImageBackground,Platform,Pressable,ScrollView,StyleSheet,View} fro
 import {art,backdrop,imageSource,rasterSource,titlebar} from './assets';
 import {Accent,Button,Icon,Panel,T} from './primitives';
 import Settings from './Settings';
+import Setup from './Setup';
 const {geometry,measuredBounds,pageTitle}=require('./layout');
 const calendar=require('../core/calendar');
 
 export default function Launcher({api,initialState}){
  const [state,setState]=useState(initialState),[selected,setSelected]=useState('jugosafio'),[page,setPage]=useState('home'),[modal,setModal]=useState(''),[notice,setNotice]=useState(''),[bounds,setBounds]=useState({width:1240,height:800}),[status,setStatus]=useState({online:null}),[revil,setRevil]=useState(false),[authCode,setAuthCode]=useState('');
+ const [booting,setBooting]=useState(!!api.initialize),[accountBusy,setAccountBusy]=useState(false);
  const event=state.content.events.find(item=>item.id===selected)||state.content.events[0],g=geometry(bounds.width,bounds.height),accent=event.accent;
  async function call(name,...args){if(!api[name])return;const result=await api[name](...args);if(result?.ok===false)throw new Error(result.error);return result?.ok===true?result.value:result;}
  async function action(name,...args){try{return await call(name,...args);}catch(error){setNotice(error.message);}}
  async function refresh(){try{const next=await call('state');if(next)setState(next);}catch(error){setNotice(error.message);}}
  async function ping(){if(!event.enabled)return;const info=await action('ping',event.id);if(info)setStatus(info);}
- useEffect(()=>{refresh();const timer=setInterval(refresh,30000);return()=>clearInterval(timer);},[]);
+ useEffect(()=>{let mounted=true;(async()=>{try{if(api.initialize){const next=await call('initialize');if(mounted){setState(next);if(next.startupError)setNotice(next.startupError);}}}catch(error){if(mounted)setNotice(error.message);}finally{if(mounted){setBooting(false);refresh();}}})();const timer=setInterval(refresh,30000);return()=>{mounted=false;clearInterval(timer);};},[]);
  useEffect(()=>{setStatus({online:null});ping();},[event.id]);
  useEffect(()=>api.onVoice?.(message=>{if(message.type==='account')refresh();if(message.type==='warning')setNotice(message.message);if(message.type==='microphone-mode')setState(old=>({...old,settings:{...old.settings,voiceMicMode:message.value?'pushToTalk':'open'}}));if(message.type==='voice-state')setState(old=>({...old,voice:message.value}));if(message.type==='microsoft-code')setAuthCode(message.code);}),[api]);
  function navigate(next){setPage(next);setRevil(false);setNotice('');}
  function select(id){setSelected(id);navigate('home');}
  const title=pageTitle(page,event),account=state.account||{name:'',connected:false};
+ async function connectAccount(){setAccountBusy(true);setNotice('');setAuthCode('');try{setState(await call('accountConnect'));}catch(error){setNotice(error.message);}finally{setAccountBusy(false);}}
+ if(api.initialize&&(booting||!state.settings.setupComplete||!account.connected))return <Setup firstRun={!state.settings.setupComplete} account={account} loading={booting||accountBusy} restoring={booting} code={authCode} notice={notice} bounds={bounds} onLayout={next=>setBounds(previous=>measuredBounds(previous,next))} onConnect={connectAccount} onMicrosoft={()=>action('voiceMicrosoft')} onCancel={()=>action('accountCancel')} onFinish={async()=>{const next=await action('finishSetup');if(next)setState(next);}}/>;
  return <Accent.Provider value={accent}><View style={s.root} onLayout={e=>{const next=e.nativeEvent.layout;setBounds(previous=>measuredBounds(previous,next));}}><View testID="desktop-scene" style={{position:'absolute',width:g.width,height:g.height,left:0,top:0,transformOrigin:'left top',transform:[{scale:g.scale}],backgroundColor:'#0d121a'}}>
   <View style={s.titlebar}><Image source={rasterSource(titlebar)} style={s.titleLine}/><View style={s.titleLabel}><Image source={imageSource('assets/fonyx-symbol.png')} style={{width:17,height:19,resizeMode:'contain'}}/><T style={s.windowTitle}>Fonyx Launcher{state.admin?' · Admin':''}</T></View>{Platform.OS==='web'&&<View style={{flexDirection:'row'}}>{[['minimize','—','Minimizar'],['maximize','□','Maximizar'],['close','×','Cerrar']].map(([key,text,label])=><Pressable key={key} accessibilityRole="button" accessibilityLabel={label} onPress={()=>action('window',key)} style={s.windowButton}><T style={{fontSize:17,color:'#b8c4d4'}}>{text}</T></Pressable>)}</View>}</View>
   <View style={s.shell}>

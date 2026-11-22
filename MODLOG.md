@@ -82,3 +82,7 @@ CI85f2926 aprobó los8 tests nativos en Android10/13/14/15, teléfono y tablet, 
 
 CI f15f287: Android15 teléfono/tablet aprueba los8 tests; captura real sobre Home confirma ambos flotantes completos y PTT recibe pulsación. Android10 teléfono detecta24px de desplazamiento al regresar: MainActivity solo ocultaba barras en onCreate. Se reaplica pantalla completa al recuperar foco para restaurar el mismo espacio de juego; se conserva la aserción de posición exacta.
 
+
+### Quickfix de primeros pasos Android
+El reporte en teléfono confirmó una omisión: la escena nativa mostraba el menú sin ejecutar configuración ni restaurar la cuenta. Se añade arranque obligatorio con audio predeterminado sin exigir selección/prueba, cuenta Microsoft sin omitir y finalización persistida solo tras identidad verificada. Al reabrir, se restaura únicamente la sesión cifrada propia; si falla se ofrece reconectar sin repetir el paso de audio. Los códigos de Microsoft se muestran también si venció una sesión guardada. Pruebas:71 contratos Node aprobados; instrumentación actualizada para exigir primeros pasos y ausencia de Jugar antes de conectar. Ejecución nativa de este cambio pendiente.
+
