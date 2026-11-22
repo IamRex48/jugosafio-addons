@@ -92,14 +92,24 @@ class FonyxVoiceBubbleTest {
             automation.takeScreenshot()!!.let { image->File(directory,"voice-bubble.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG,100,it) };image.recycle() }
             context.startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             SystemClock.sleep(1000)
-            val outside=automation.takeScreenshot()!!
-            File(directory,"voice-over-home.png").outputStream().use { outside.compress(Bitmap.CompressFormat.PNG,100,it) }
+            val screen=automation.takeScreenshot()!!
             for(label in listOf("Burbuja de voz","Pulsar para hablar")) {
                 val rect=bounds(label)
-                assertTrue("Overlay must remain visible outside Fonyx: $label $rect",node(label).isVisibleToUser && rect.left>=0 && rect.top>=0 && rect.right<=outside.width && rect.bottom<=outside.height)
+                assertTrue("Overlay must remain visible outside Fonyx: $label $rect",node(label).isVisibleToUser && rect.left>=0 && rect.top>=0 && rect.right<=screen.width && rect.bottom<=screen.height)
             }
-            outside.recycle()
+            screen.recycle()
+            val pressesBefore=calls.count { it==("ptt" to true) }
             gesture(bounds("Pulsar para hablar"),cancel=true)
+            assertEquals("PTT must receive the touch outside Fonyx",pressesBefore+1,calls.count { it==("ptt" to true) })
+            assertEquals("ptt" to false,calls.last())
+            instrumentation.waitForIdleSync();SystemClock.sleep(300)
+            automation.takeScreenshot()?.recycle();SystemClock.sleep(150)
+            automation.takeScreenshot()!!.let { image->File(directory,"voice-over-home.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG,100,it) };image.recycle() }
+            context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            node("Fonyx Launcher")
+            val restoreDeadline=SystemClock.uptimeMillis()+5000
+            while(SystemClock.uptimeMillis()<restoreDeadline && bounds("Pulsar para hablar")!=moved)SystemClock.sleep(100)
+            assertEquals("Returning to landscape must restore the configured PTT position",moved,bounds("Pulsar para hablar"))
             assertTrue(calls.contains("mute" to true));assertTrue(calls.contains("deafen" to true));assertEquals(.35,volume,.001)
             assertTrue(node("Desconectar").performAction(AccessibilityNodeInfo.ACTION_CLICK));instrumentation.waitForIdleSync();assertTrue(calls.contains("disconnect" to false))
         } finally {

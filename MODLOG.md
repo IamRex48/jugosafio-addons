@@ -76,3 +76,6 @@ Nueva revisión del APK real: su DSP usa USAGE_GAME14 y SPEECH1; MainActivity di
 
 
 Se retiran minimizar/maximizar/cerrar de Android: esos controles solo se renderizan en web/escritorio. El smoke real de Electron exige conservarlos y aprobó; el test Android exige su ausencia. Se amplía el test de overlay para salir a la pantalla de inicio de Android, mantener ambos flotantes visibles y pulsar PTT allí. Esta última comprobación y la salida GAME siguen pendientes de CI; compilación local APK+instrumentación aprobada. No se modificó la publicación de eventos: Jugosafio continúa con voiceEnabled=false en launcher-content.json remoto.
+
+CI85f2926 aprobó los8 tests nativos en Android10/13/14/15, teléfono y tablet, incluida salida GAME y Opus bidireccional. La captura fuera de Fonyx reveló recorte durante cambio de orientación: los overlays ahora usan WindowContext del display y recolocan sin sobrescribir la posición elegida. El test exige recibir una pulsación real fuera del launcher y restaurar la posición al volver. Launcher mantiene sensorLandscape y declara categoría game; su activación en modos juego depende del fabricante. Se libera además MediaStream al detener o cancelar captura, separando tracks antes de destruirlos.68 contratos Node y compilación APK/instrumentación aprobados; nueva ejecución del overlay pendiente.
+

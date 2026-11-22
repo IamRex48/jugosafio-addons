@@ -13,6 +13,7 @@ import java.security.SecureRandom
 
 class FonyxVoiceModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
     @Volatile private var microphone = ""
+    @Volatile private var microphoneStream = ""
     init {
         FonyxVoiceService.dispatch = { name, value -> emit(name, value) }
         FonyxVoiceService.volumeChanged = { value ->
@@ -21,7 +22,9 @@ class FonyxVoiceModule(context: ReactApplicationContext) : ReactContextBaseJavaM
         FonyxVoiceService.stopMicrophone = {
             if (microphone.isNotEmpty()) {
                 val rtc = reactApplicationContext.getNativeModule(WebRTCModule::class.java)
-                rtc?.mediaStreamTrackSetEnabled(-1, microphone, false); rtc?.mediaStreamTrackRelease(microphone); microphone = ""
+                rtc?.mediaStreamRemoveTrack(microphoneStream,-1,microphone)
+                rtc?.mediaStreamTrackSetEnabled(-1, microphone, false); rtc?.mediaStreamTrackRelease(microphone)
+                rtc?.mediaStreamRelease(microphoneStream);microphone = "";microphoneStream = ""
             }
         }
     }
@@ -58,7 +61,7 @@ class FonyxVoiceModule(context: ReactApplicationContext) : ReactContextBaseJavaM
             ContextCompat.startForegroundService(reactApplicationContext, Intent(reactApplicationContext, FonyxVoiceService::class.java)); promise.resolve(true)
         } catch (error: Exception) { promise.reject("VOICE_START", error.message) }
     } }
-    @ReactMethod fun track(id: String, promise: Promise) { microphone = id; promise.resolve(true) }
+    @ReactMethod fun track(id: String, streamId: String, promise: Promise) { reactApplicationContext.runOnUiQueueThread { microphoneStream = streamId;microphone = id;promise.resolve(true) } }
     @ReactMethod fun update(muted: Boolean, deafened: Boolean, verified: Boolean, speaking: Boolean, pushToTalk: Boolean) { FonyxVoiceService.instance?.update(muted, deafened, verified, speaking, pushToTalk) }
     @ReactMethod fun stop(promise: Promise) { reactApplicationContext.runOnUiQueueThread {
         FonyxVoiceService.stopMicrophone?.invoke()

@@ -6,7 +6,7 @@ const {transformSync}=require('esbuild');
 const {NativeVoiceAudio}=require('../packages/core/voice-audio');
 function fixture(capture){
  const track={id:'mic',enabled:true,stopped:false,stop(){this.stopped=true;}};
- const stream={getAudioTracks:()=>[track],getTracks:()=>[track]};
+ const stream={id:'stream',released:false,getAudioTracks:()=>[track],getTracks:()=>[track],release(){this.released=true;}};
  const registered=[];
  const module={exports:{}};
  const code=transformSync(fs.readFileSync('apps/mobile/native-audio.js','utf8'),{format:'cjs'}).code;
@@ -29,7 +29,7 @@ test('Android microphone remains gated by verification, PTT and server mute',asy
   audio.setControls({pushToTalk:true});assert.equal(track.enabled,false);
   audio.setControls({pttHeld:true});assert.equal(track.enabled,true);
   audio.setControls({pttHeld:false});assert.equal(track.enabled,false);
-  await audio.stop();assert.equal(track.stopped,true);assert.equal(audio.stream,null);
+  const stream=audio.stream;await audio.stop();assert.equal(track.stopped,true);assert.equal(stream.released,true);assert.equal(audio.stream,null);
  }finally{await audio.stop();}
 });
 test('Android remote gain follows distance, verification and deafen',()=>{
@@ -45,8 +45,8 @@ test('Android remote gain follows distance, verification and deafen',()=>{
 test('Android cancellation discards late microphone capture without registering it',async()=>{
  let release;const {audio,registered}=fixture(()=>new Promise(resolve=>release=resolve));
  const pending=audio.start({name:'rex'});await new Promise(resolve=>setImmediate(resolve));
- await audio.stop();let stopped=false;release({getTracks:()=>[{stop(){stopped=true;}}]});
- await pending;assert.equal(stopped,true);assert.equal(audio.stream,null);assert.deepEqual(registered,[]);
+ await audio.stop();let stopped=false,released=false;release({getTracks:()=>[{stop(){stopped=true;}}],release(){released=true;}});
+ await pending;assert.equal(stopped,true);assert.equal(released,true);assert.equal(audio.stream,null);assert.deepEqual(registered,[]);
 });
 test('Android speaking indicator reads real WebRTC levels and clears on mute',async()=>{
  const {audio}=fixture();const levels=[];audio.onLevel=value=>levels.push(value);

@@ -8,8 +8,8 @@ export class MobileVoiceAudio extends NativeVoiceAudio{
   await this.stop();const generation=++this.generation;this.name=name;this.active=true;
   try{
    const stream=await this.media.getUserMedia({video:false,audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,...(inputId?{deviceId:{exact:inputId}}:{})}});
-   if(generation!==this.generation){stream.getTracks().forEach(track=>track.stop());return;}
-   this.stream=stream;this.applyControls();await NativeModules.FonyxVoice.track(stream.getAudioTracks()[0].id);
+   if(generation!==this.generation){stream.getTracks().forEach(track=>track.stop());stream.release?.();return;}
+   this.stream=stream;this.applyControls();await NativeModules.FonyxVoice.track(stream.getAudioTracks()[0].id,stream.id);
    this.meterTimer=setInterval(()=>this.measureLevel(generation),200);this.onChange();
   }catch(error){await this.stop();throw error;}
  }
@@ -24,4 +24,5 @@ export class MobileVoiceAudio extends NativeVoiceAudio{
  applySpatial(peer,position){if(peer.remoteTrack){peer.remoteTrack.enabled=!this.deafened&&!this.forcedDeafen;peer.remoteTrack._setVolume(this.verified&&!this.deafened&&!this.forcedDeafen?Math.max(0,Math.min(1,this.volume*position.gain)):0);}}
  async setOutput(id=''){if(id)throw new Error('Elige Predeterminado del sistema para la salida de audio.');}
  async setInput(id=''){if(id)throw new Error('Selecciona el micrófono antes de conectar la voz.');}
+ async stop(){const stream=this.stream;try{await super.stop();}finally{stream?.release?.();}}
 }

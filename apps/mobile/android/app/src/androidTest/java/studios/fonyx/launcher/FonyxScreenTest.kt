@@ -73,6 +73,8 @@ class FonyxScreenTest {
     @Test fun nativeViewsAndSharedCoreStartWithoutMetro() {
         assertTrue("Images must initialize before the first native view", com.facebook.drawee.backends.pipeline.Fresco.hasBeenInitialized())
         val context = instrumentation.targetContext
+        assertEquals(android.content.pm.ApplicationInfo.CATEGORY_GAME,context.packageManager.getApplicationInfo(context.packageName,0).category)
+        assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,context.packageManager.getActivityInfo(android.content.ComponentName(context,MainActivity::class.java),0).screenOrientation)
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: throw AssertionError("Launcher activity missing")
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         waitFor("Fonyx Launcher")
