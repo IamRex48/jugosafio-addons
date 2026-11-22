@@ -35,6 +35,8 @@ class FonyxAccountVaultTest {
             vault.clear();assertEquals("",vault.load())
             val engine=Accountengine.new_(vault,object:Listener { override fun authCode(code:String) { throw AssertionError("This offline test must not request login") } })
             assertFalse(engine.savedSignIn());engine.cancel()
+            val nativeError=runCatching { engine.proof("invalid nonce") }.exceptionOrNull()?:throw AssertionError("Invalid identity challenge must fail")
+            assertEquals("Desafío de identidad inválido.",accountFailureMessage(nativeError.message))
         } finally { vault.clear() }
     }
 }

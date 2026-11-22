@@ -39,6 +39,6 @@ class FonyxAccountModule(context: ReactApplicationContext) : ReactContextBaseJav
 
 internal fun accountFailureMessage(message:String?):String {
     val stages=listOf("Microsoft","Xbox Live","la clave de sesión","los servicios de Minecraft","Minecraft","la clave de identidad","la identidad de Minecraft")
-    val allowed=stages.map { "No se pudo completar la conexión con $it." }+listOf("Conexión cancelada.","No se pudo abrir la sesión cifrada.","La sesión guardada no es válida.","No se pudo guardar la sesión cifrada.","No se pudo renovar la sesión guardada.","Microsoft necesita confirmar tu sesión.","Servicio de identidad de Minecraft inválido.")
+    val allowed=stages.map { "No se pudo completar la conexión con $it." }+listOf("Desafío de identidad inválido.","Conexión cancelada.","No se pudo abrir la sesión cifrada.","La sesión guardada no es válida.","No se pudo guardar la sesión cifrada.","No se pudo renovar la sesión guardada.","Microsoft necesita confirmar tu sesión.","Servicio de identidad de Minecraft inválido.")
     return message?.takeIf { it in allowed }?:"No se pudo completar la identidad de Microsoft."
 }
