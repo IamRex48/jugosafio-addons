@@ -28,7 +28,7 @@ class FonyxAccountBackgroundTest {
         val deadline=SystemClock.uptimeMillis()+20000
         var module:FonyxAccountModule?=null
         while(SystemClock.uptimeMillis()<deadline&&module==null) {
-            module=app.reactHost.currentReactContext?.getNativeModule(FonyxAccountModule::class.java)
+            module=app.reactHost.currentReactContext?.getNativeModule("FonyxAccount") as? FonyxAccountModule
             SystemClock.sleep(100)
         }
         assertNotNull(module);SystemClock.sleep(500)
