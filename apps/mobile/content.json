@@ -40,7 +40,7 @@
       "port": 19132,
       "manifestUrl": "https://github.com/IamRex48/jugosafio-addons/releases/download/launcher-v1.2.0/event-jugosafio-20261121-verified.json",
       "bankEndpoint": "",
-      "voiceEnabled": false,
+      "voiceEnabled": true,
       "voiceOptional": true,
       "brandingUuid": "",
       "logo": "assets/jugosafio.png",

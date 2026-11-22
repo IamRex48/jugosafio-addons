@@ -46,7 +46,8 @@
             "publishAt": null
           }
         ]
-      }
+      },
+      "voiceEnabled": true
     },
     {
       "id": "bedrock",

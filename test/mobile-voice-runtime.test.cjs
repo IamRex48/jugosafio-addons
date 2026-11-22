@@ -6,7 +6,7 @@ const vm=require('node:vm');
 const {transformSync}=require('esbuild');
 test('Android uses the Minecraft URI observed in the real VCMC APK and retains host validation',()=>{
  const {androidConnectUri,connectUri}=require('../packages/core/content');
- assert.equal(androidConnectUri('example.org',19132),'minecraft://connect/?serverUrl=example.org&serverPort=19132');
+ assert.equal(androidConnectUri('example.org',19132),'minecraft://connect?serverUrl=example.org&serverPort=19132');
  assert.equal(connectUri('example.org',19132),'minecraft://connect?serverUrl=example.org&serverPort=19132');
  assert.throws(()=>androidConnectUri('evil/?serverPort=1',19132));assert.throws(()=>androidConnectUri('example.org',0));
 });

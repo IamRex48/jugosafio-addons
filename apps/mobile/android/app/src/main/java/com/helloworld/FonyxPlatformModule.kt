@@ -1,5 +1,8 @@
 package studios.fonyx.launcher
 
+import android.content.Intent
+import android.content.ComponentName
+import android.net.Uri
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.facebook.react.bridge.*
@@ -10,6 +13,12 @@ class FonyxPlatformModule(context: ReactApplicationContext) : ReactContextBaseJa
     private val preferences get() = reactApplicationContext.getSharedPreferences("launcher-settings", 0)
 
     @ReactMethod fun settings(promise: Promise) { promise.resolve(preferences.getString("settings", "{}")) }
+    @ReactMethod fun launchMinecraft(address:String,promise:Promise) { reactApplicationContext.runOnUiQueueThread {
+        try {
+            val component=reactApplicationContext.packageManager.getLaunchIntentForPackage("com.mojang.minecraftpe")?.component?:error("Minecraft no está instalado en este dispositivo.")
+            reactApplicationContext.startActivity(minecraftConnectIntent(address,component));promise.resolve(true)
+        } catch(error:Exception) { promise.reject("MINECRAFT_CONNECT",error.message?:"No se pudo abrir la conexión con Minecraft.") }
+    } }
 
     @ReactMethod fun saveSettings(value: String, promise: Promise) {
         try {
@@ -50,4 +59,12 @@ class FonyxPlatformModule(context: ReactApplicationContext) : ReactContextBaseJa
             } catch (error: Exception) { promise.reject("WINDOW", error.message, error) }
         }
     }
+}
+
+internal fun minecraftConnectIntent(address:String,component:ComponentName):Intent {
+    val uri=Uri.parse(address)
+    require(uri.scheme=="minecraft"&&uri.authority=="connect"&&uri.path.isNullOrEmpty()&&uri.fragment==null&&uri.queryParameterNames==setOf("serverUrl","serverPort")) { "El enlace de conexión con Minecraft no es válido." }
+    require(Regex("[A-Za-z0-9.:%_-]{1,253}").matches(uri.getQueryParameter("serverUrl")?:"")&&(uri.getQueryParameter("serverPort")?.toIntOrNull()?:0) in 1..65535) { "La dirección o el puerto del servidor no son válidos." }
+    require(component.packageName=="com.mojang.minecraftpe")
+    return Intent(Intent.ACTION_VIEW,uri).setComponent(component).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 }

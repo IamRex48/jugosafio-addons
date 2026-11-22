@@ -1,5 +1,10 @@
 package studios.fonyx.launcher
 
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import studios.fonyx.auth.accountengine.Accountengine
@@ -16,7 +21,28 @@ class FonyxAccountModule(context: ReactApplicationContext) : ReactContextBaseJav
             }
         }
     }) }
+    init { FonyxAccountService.cancelAuthentication={engine.cancel()} }
     override fun getName() = "FonyxAccount"
+    @ReactMethod fun begin(promise:Promise) { reactApplicationContext.runOnUiQueueThread {
+        try {
+            check(reactApplicationContext.currentActivity!=null)
+            ContextCompat.startForegroundService(reactApplicationContext,Intent(reactApplicationContext,FonyxAccountService::class.java))
+            waitForService(true,promise)
+        } catch(_:Exception) { promise.reject("ACCOUNT_BACKGROUND","Abre Fonyx para iniciar la conexión con Microsoft.") }
+    } }
+    @ReactMethod fun end(promise:Promise) { reactApplicationContext.runOnUiQueueThread {
+        reactApplicationContext.stopService(Intent(reactApplicationContext,FonyxAccountService::class.java))
+        waitForService(false,promise)
+    } }
+    private fun waitForService(active:Boolean,promise:Promise) {
+        val handler=Handler(Looper.getMainLooper());val deadline=SystemClock.uptimeMillis()+3000
+        val wait=object:Runnable { override fun run() {
+            if((FonyxAccountService.instance!=null)==active)promise.resolve(true)
+            else if(SystemClock.uptimeMillis()>=deadline)promise.reject("ACCOUNT_BACKGROUND","No se pudo preparar la conexión de Microsoft en segundo plano.")
+            else handler.postDelayed(this,25)
+        } }
+        handler.post(wait)
+    }
     @ReactMethod fun proof(nonce: String, promise: Promise) { executor.execute {
         try { promise.resolve(engine.proof(nonce)) } catch (error: Exception) { promise.reject("IDENTITY_PROOF", accountFailureMessage(error.message)) }
     } }
@@ -34,7 +60,7 @@ class FonyxAccountModule(context: ReactApplicationContext) : ReactContextBaseJav
     } }
     @ReactMethod fun addListener(name: String) { }
     @ReactMethod fun removeListeners(count: Double) { }
-    override fun invalidate() { engine.cancel(); executor.shutdownNow(); super.invalidate() }
+    override fun invalidate() { engine.cancel();reactApplicationContext.stopService(Intent(reactApplicationContext,FonyxAccountService::class.java));FonyxAccountService.cancelAuthentication=null; executor.shutdownNow(); super.invalidate() }
 }
 
 internal fun accountFailureMessage(message:String?):String {

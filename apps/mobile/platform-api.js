@@ -29,7 +29,7 @@ export const api={
  voiceDisconnect:async()=>{await disconnectVoice();return ok(true);},
  voiceControls:async value=>{voiceControls(value);return ok(voiceState());},
  voiceConnect:async options=>{const event=content.events.find(e=>e.id===options.eventId);if(!event?.enabled||!event.voiceEnabled)throw new Error('Este evento no tiene chat de voz activado.');return ok(await connectVoice(account.identity,event,settings));},
- play:async id=>{const event=content.events.find(e=>e.id===id);if(!event?.enabled)throw new Error('El evento no está disponible.');if(!account.identity)throw new Error('Conecta tu cuenta Microsoft primero.');const {androidConnectUri}=require('../../packages/core/content');const uri=androidConnectUri(event.server,event.port);if(event.voiceEnabled)await connectVoice(account.identity,event,settings);else await disconnectVoice();try{await Linking.openURL(uri);return ok(true);}catch(error){await disconnectVoice();throw error;}},
+ play:async id=>{const event=content.events.find(e=>e.id===id);if(!event?.enabled)throw new Error('El evento no está disponible.');if(!account.identity)throw new Error('Conecta tu cuenta Microsoft primero.');const {androidConnectUri}=require('../../packages/core/content');const uri=androidConnectUri(event.server,event.port);if(event.voiceEnabled)await connectVoice(account.identity,event,settings);else await disconnectVoice();try{await platform.launchMinecraft(uri);return ok(true);}catch(error){await disconnectVoice();throw error;}},
  accountConnect:async()=>{await account.login();return ok(await snapshot());},
  accountCancel:async()=>{await account.close();return ok(true);},
  voiceSignOut:async()=>{await disconnectVoice();await account.signOut();return ok(true);},

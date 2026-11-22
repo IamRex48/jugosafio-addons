@@ -24,8 +24,7 @@ function connectUri(host, port) {
   if (!validHost(host) || !Number.isInteger(port) || port < 1 || port > 65535) throw new Error('La dirección o el puerto del evento no son válidos.');
   return `minecraft://connect?serverUrl=${encodeURIComponent(host)}&serverPort=${port}`;
 }
-// VCMC Android 2.3.5 opens the connect/ path; keep the desktop URI unchanged.
-function androidConnectUri(host,port){return connectUri(host,port).replace('minecraft://connect?','minecraft://connect/?');}
+function androidConnectUri(host,port){return connectUri(host,port);}
 
 function utf8Bytes(text){let bytes=0;for(let i=0;i<text.length;i++){const code=text.charCodeAt(i);bytes+=code<128?1:code<2048?2:3;if(code>=0xd800&&code<=0xdbff&&i+1<text.length){const next=text.charCodeAt(i+1);if(next>=0xdc00&&next<=0xdfff){bytes++;i++;}}}return bytes;}
 

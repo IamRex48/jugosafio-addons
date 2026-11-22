@@ -16,6 +16,11 @@ import java.util.concurrent.TimeUnit
 class FonyxSettingsTest {
     @Test fun persistsPreferencesButNeverAcceptsCredentialsOrInvalidValues() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val address="minecraft://connect?serverUrl=example.org&serverPort=19132"
+        val component=android.content.ComponentName("com.mojang.minecraftpe","com.mojang.minecraftpe.MainActivity")
+        val connect=minecraftConnectIntent(address,component)
+        assertEquals(android.content.Intent.ACTION_VIEW,connect.action);assertEquals(address,connect.dataString);assertEquals(component,connect.component)
+        for(invalid in listOf("minecraft://connect/?serverUrl=example.org&serverPort=19132","minecraft://connect?serverUrl=example.org&serverPort=0","https://example.org"))assertTrue(runCatching { minecraftConnectIntent(invalid,component) }.isFailure)
         val preferences = context.getSharedPreferences("launcher-settings", 0)
         val original = preferences.getString("settings", null)
         val module = FonyxPlatformModule(BridgeReactContext(context))
