@@ -7,6 +7,7 @@ function fixture({voiceEnabled=true,identity={name:'Rex',xuid:'123'},connectErro
  vm.runInNewContext(transformSync(fs.readFileSync('apps/mobile/platform-api.js','utf8'),{format:'cjs'}).code,{module,exports:module.exports,require:name=>{
   if(name==='./voice-runtime')return {voiceState:()=>({}),voiceEvents,connectVoice:async()=>{calls.push('voice');if(connectError)throw new Error('connecting');},disconnectVoice:async()=>calls.push('disconnect')};
   if(name==='./account')return {account:{identity},restoreAccount:async()=>{calls.push('restore');if(restoreError)throw new Error('expired session');}};
+  if(name==='./audio-test')return {};
   if(name==='react-native')return {NativeModules:{FonyxPlatform:{settings:async()=>JSON.stringify(savedSettings),saveSettings:async value=>{savedSettings=JSON.parse(value);saved.push(savedSettings);}}},Linking:{openURL:async uri=>{calls.push(uri);if(openError)throw new Error('no Minecraft');}}};
   if(name==='../../packages/ui/initial-state')return {...initial,initialState:{...initial.initialState,content}};
   if(name==='../../packages/core/content')return require('../packages/core/content');

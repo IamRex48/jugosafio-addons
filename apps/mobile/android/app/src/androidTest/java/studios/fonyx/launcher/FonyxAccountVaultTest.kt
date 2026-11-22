@@ -16,6 +16,8 @@ class FonyxAccountVaultTest {
     @Test fun keystoreEncryptsSessionRejectsTamperingAndLoadsOurOwnJniWithoutAnAccount() {
         assumeTrue(Build.FINGERPRINT.contains("generic") || Build.MODEL.contains("sdk_gphone"))
         val context=InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("No se pudo completar la conexión con Xbox Live.",accountFailureMessage("No se pudo completar la conexión con Xbox Live."))
+        assertEquals("No se pudo completar la identidad de Microsoft.",accountFailureMessage("private token or provider body"))
         val preferences=context.getSharedPreferences("microsoft-session",0)
         assertNull("This test requires a fresh emulator without a real account",preferences.getString("encrypted",null))
         val vault=AccountVault(context)

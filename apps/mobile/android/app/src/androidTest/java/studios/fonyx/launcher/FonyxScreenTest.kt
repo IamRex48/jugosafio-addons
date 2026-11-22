@@ -89,6 +89,16 @@ class FonyxScreenTest {
         }
         assertTrue("Launcher must be landscape", bounds.width() > bounds.height())
         waitFor("Antes de jugar.");waitFor("Tu voz. Tu salida.");capture("first-audio")
+        assertEquals(0,microphoneLevel(shortArrayOf(0,0),2))
+        assertEquals(100,microphoneLevel(shortArrayOf(32767,-32768),2))
+        assertEquals(30,microphoneLevel(shortArrayOf(3277,-3277),2))
+        instrumentation.uiAutomation.executeShellCommand("pm grant ${context.packageName} android.permission.RECORD_AUDIO").use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
+        tab("Probar micrófono");waitFor("Detener prueba");tab("Detener prueba");waitFor("Probar micrófono")
+        tab("Escuchar prueba")
+        val outputDeadline=SystemClock.uptimeMillis()+10000
+        while(SystemClock.uptimeMillis()<outputDeadline&&find(instrumentation.uiAutomation.rootInActiveWindow){it.text?.toString()?.startsWith("Salida: ")==true}==null)SystemClock.sleep(100)
+        assertNotNull("Output test must finish through the native player",find(instrumentation.uiAutomation.rootInActiveWindow){it.text?.toString()?.startsWith("Salida: ")==true})
+        capture("first-audio-tested")
         assertNull("Android must not show PC window controls",find(instrumentation.uiAutomation.rootInActiveWindow) { it.contentDescription?.toString() in setOf("Minimizar","Maximizar","Cerrar") })
         tab("Continuar");waitFor("Entra con tu cuenta.")
         assertTrue("Own Microsoft login must be available",waitFor("Conectar Microsoft").isEnabled)

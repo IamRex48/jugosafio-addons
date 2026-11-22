@@ -86,3 +86,7 @@ CI f15f287: Android15 teléfono/tablet aprueba los8 tests; captura real sobre Ho
 ### Quickfix de primeros pasos Android
 El reporte en teléfono confirmó una omisión: la escena nativa mostraba el menú sin ejecutar configuración ni restaurar la cuenta. Se añade arranque obligatorio con audio predeterminado sin exigir selección/prueba, cuenta Microsoft sin omitir y finalización persistida solo tras identidad verificada. Al reabrir, se restaura únicamente la sesión cifrada propia; si falla se ofrece reconectar sin repetir el paso de audio. Los códigos de Microsoft se muestran también si venció una sesión guardada. Pruebas:71 contratos Node aprobados; instrumentación actualizada para exigir primeros pasos y ausencia de Jugar antes de conectar. Ejecución nativa de este cambio pendiente.
 
+
+### Pruebas de audio y diagnóstico de identidad Android
+Se añaden prueba de micrófono con permiso explícito, medidor RMS, límite10s y liberación al salir/cambiar de app, y tono de salida GAME sin guardar audio. Continúan siendo opcionales. Se añade Copiar código de Microsoft validado en nativo. El error posterior al login quedaba oculto tanto en Kotlin como JS: ahora conserva únicamente mensajes de etapa permitidos, sin cuerpos OAuth ni tokens. La causa concreta de la cuenta reportada aún requiere el nuevo error; no se afirma resuelta la autenticación real. Metro limita2 workers tras agotar memoria en la compilación local. Pruebas actualizadas para permisos/audio/copia y conservación de errores seguros.
+

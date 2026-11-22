@@ -12,7 +12,7 @@ class Engine extends EventEmitter{
   if(command==='sign_out'){await native.signOut();return {};}
   if(command==='identity_proof'){
    try{return JSON.parse(await native.proof(args.payload));}
-   catch{const error=new Error('El motor no pudo completar identity_proof.');error.code='VOICE_ENGINE_REQUEST_FAILED';error.command=command;throw error;}
+   catch(cause){const error=new Error(cause.code==='IDENTITY_PROOF'?cause.message:'La respuesta de identidad no es válida.');error.code='VOICE_ENGINE_REQUEST_FAILED';error.command=command;throw error;}
   }
   throw new Error('El puente de Minecraft todavía no está disponible en Android.');
  }
@@ -20,6 +20,7 @@ class Engine extends EventEmitter{
 }
 async function json(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error('Servicio de identidad no disponible.');const text=await response.text();if(text.length>1024*1024)throw new Error('Respuesta de identidad demasiado grande.');return JSON.parse(text);}finally{clearTimeout(timer);}}
 export const account=new AddonBridge({engine:new Engine(),loadKeys:()=>identityKeys(json),verifyIdentity:verifyAccountProof,nonce:()=>NativeModules.FonyxCrypto.randomNonce()});
+export async function copyAccountCode(code){return native.copyCode(code);}
 export async function restoreAccount(){
  if(account.identity)return;
  const session=await account.engine.request('ping');
